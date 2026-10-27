@@ -129,7 +129,6 @@ export default async function HomePage({
                     {user.displayName}&apos;s Wishlist
                   </h1>
                   <div className="mt-0.5 flex items-center gap-1.5">
-                    <Pulse />
                     <p className="text-label-sm text-outline">
                       Synced with {partner?.displayName ?? "your partner"}
                     </p>

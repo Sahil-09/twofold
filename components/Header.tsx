@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { CurrentUser } from "@/lib/auth";
 import { initials } from "@/lib/format";
-import { Icon, Pulse } from "./icons";
+import { Icon } from "./icons";
 
 /** Fixed twin header. The unread count is fetched by the page so it can run alongside the list. */
 export function Header({ user, section, unread }: { user: CurrentUser; section: string; unread: number }) {
@@ -15,7 +15,6 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
           <span className="ml-1 flex flex-col">
             <span className="flex items-center gap-1.5">
               <span className="text-title-md font-bold tracking-tight">Twofold</span>
-              <Pulse className="bg-primary-container" />
             </span>
             <span className="text-label-sm capitalize text-outline">{section}</span>
           </span>
