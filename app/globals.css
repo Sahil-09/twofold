@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --surface: #fcf9f6;
+  --surface-lowest: #ffffff;
+  --surface-low: #f6f3f0;
+  --surface-container: #f0edea;
+  --surface-high: #eae8e5;
+  --surface-highest: #e5e2df;
+  --surface-variant: #e5e2df;
+  --on-surface: #1b1c1a;
+  --on-surface-variant: #544243;
+  --outline: #877273;
+  --outline-variant: #dac1c1;
+  --primary: #98434c;
+  --on-primary: #ffffff;
+  --primary-container: #d9777f;
+  --on-primary-container: #57121d;
+  --primary-fixed: #ffdadb;
+  --on-primary-fixed: #40010e;
+  --on-primary-fixed-variant: #7a2c36;
+  --secondary: #7d562d;
+  --secondary-container: #ffca98;
+  --secondary-fixed: #ffdcbd;
+  --on-secondary-fixed: #2c1600;
+  --on-secondary-fixed-variant: #623f18;
+  --tertiary: #944931;
+  --tertiary-fixed: #ffdbd0;
+  --on-tertiary-fixed: #3a0a00;
+  --on-tertiary-fixed-variant: #76321d;
+  --error: #ba1a1a;
+  --glass: rgba(252, 249, 246, 0.8);
+  --elev-rest: 0 8px 24px -4px rgba(194, 109, 83, 0.06);
+  --elev-float: 0 16px 36px -6px rgba(217, 119, 127, 0.12);
+  --elev-nav: 0 8px 24px -4px rgba(194, 109, 83, 0.12);
+  --elev-field: 0 4px 16px rgba(194, 109, 83, 0.04);
+}
+
+.dark {
+  --surface: #1a141a;
+  --surface-lowest: #221a21;
+  --surface-low: #241b22;
+  --surface-container: #2a1f27;
+  --surface-high: #322630;
+  --surface-highest: #3b2d38;
+  --surface-variant: #3b2d38;
+  --on-surface: #f5efeb;
+  --on-surface-variant: #b5a6b0;
+  --outline: #9c858f;  --outline-variant: #463a40;
+  --primary: #e28d95;
+  --on-primary: #40010e;
+  --primary-container: #98434c;
+  --on-primary-container: #ffdadb;
+  --primary-fixed: #4d2c31;
+  --on-primary-fixed: #ffdadb;
+  --on-primary-fixed-variant: #ffb2b7;
+  --secondary: #f0bd8b;
+  --secondary-container: #5a3e1e;
+  --secondary-fixed: #4a3319;
+  --on-secondary-fixed: #ffe0c0;
+  --on-secondary-fixed-variant: #ffca98;
+  --tertiary: #ffb59f;
+  --tertiary-fixed: #4a2519;
+  --on-tertiary-fixed: #ffdbd0;
+  --on-tertiary-fixed-variant: #ffb59f;
+  --error: #ffb4ab;
+  --glass: rgba(34, 26, 33, 0.82);
+  --elev-rest: 0 12px 32px -4px rgba(0, 0, 0, 0.45);
+  --elev-float: 0 16px 36px -6px rgba(0, 0, 0, 0.55);
+  --elev-nav: 0 12px 32px -4px rgba(0, 0, 0, 0.55);
+  --elev-field: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-lowest: var(--surface-lowest);
+  --color-surface-low: var(--surface-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-high: var(--surface-high);
+  --color-surface-highest: var(--surface-highest);
+  --color-surface-variant: var(--surface-variant);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-on-primary-fixed: var(--on-primary-fixed);
+  --color-on-primary-fixed-variant: var(--on-primary-fixed-variant);
+  --color-secondary: var(--secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-secondary-fixed: var(--secondary-fixed);
+  --color-on-secondary-fixed: var(--on-secondary-fixed);
+  --color-on-secondary-fixed-variant: var(--on-secondary-fixed-variant);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-on-tertiary-fixed: var(--on-tertiary-fixed);
+  --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
+  --color-error: var(--error);
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* The Stitch type scale. */
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 14px;
+  --text-label-sm--letter-spacing: 0.03em;
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--letter-spacing: 0.02em;
+  --text-label-lg: 14px;
+  --text-label-lg--line-height: 20px;
+  --text-label-lg--letter-spacing: 0.01em;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 22px;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 26px;
+  --text-title-md: 18px;
+  --text-title-md--line-height: 26px;
+  --text-headline-sm: 20px;
+  --text-headline-sm--line-height: 28px;
+  --text-headline-sm--letter-spacing: -0.01em;
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
+  --text-headline-md--letter-spacing: -0.015em;
+  --text-headline-lg-mobile: 26px;
+  --text-headline-lg-mobile--line-height: 34px;
+  --text-headline-lg-mobile--letter-spacing: -0.015em;
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--letter-spacing: -0.02em;
+
+  --radius-card: 1.5rem;
+  --radius-sheet: 1rem;
+
+  --shadow-rest: var(--elev-rest);
+  --shadow-float: var(--elev-float);
+  --shadow-nav: var(--elev-nav);
+  --shadow-field: var(--elev-field);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-surface text-on-surface antialiased;
+  }
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    letter-spacing: inherit;
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl bg-surface-lowest shadow-rest;
+  }
+  .btn {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full px-5 text-label-lg transition-transform active:scale-[0.98] disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-5 text-label-lg font-bold text-on-primary shadow-rest transition-transform active:scale-[0.98] disabled:opacity-50;
+  }
+  .btn-soft {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full bg-surface-container px-5 text-label-lg font-semibold text-on-surface transition-transform active:scale-[0.98] disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full border border-outline-variant px-5 text-label-lg font-semibold text-on-surface-variant transition-transform active:scale-[0.98] disabled:opacity-50;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-label-sm font-semibold;
+  }
+  .field {
+    @apply w-full rounded-2xl border border-outline-variant bg-surface-lowest px-4 py-3 text-body-md text-on-surface outline-none transition placeholder:text-outline;
+  }
+  .field:focus {
+    @apply border-primary;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 14%, transparent);
+  }
+  .label {
+    @apply text-label-sm font-semibold uppercase tracking-[0.04em] text-on-surface-variant;
+  }
+  .section-title {
+    @apply px-1 text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant;
+  }
+  /* Borderless field card from the Add Wish mock. */
+  .field-card {
+    @apply rounded-2xl bg-surface-lowest p-3 shadow-field;
+  }
+  /* One switch for every toggle: state comes from aria-checked. */
+  .switch {
+    @apply relative inline-flex h-7 w-12 shrink-0 items-center rounded-full bg-surface-high p-0.5 transition-colors disabled:opacity-60;
+  }
+  .switch[aria-checked="true"] {
+    @apply bg-primary;
+  }
+  .switch-knob {
+    @apply h-6 w-6 rounded-full bg-surface-lowest shadow-md transition-transform;
+  }
+  .switch[aria-checked="true"] .switch-knob {
+    @apply translate-x-5;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

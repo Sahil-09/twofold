@@ -1,0 +1,18 @@
+{
+  "name": "Twofold",
+  "short_name": "Twofold",
+  "description": "Two wishlists, one quiet place.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fcf9f6",
+  "theme_color": "#fcf9f6",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

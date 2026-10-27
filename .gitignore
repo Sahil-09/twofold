@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/
+
+# next / build output
+.next/
+out/
+build/
+.vercel/
+
+# env files (keep the template)
+.env
+.env.*
+!.env.example
+
+# secrets and local config
+opencode.json
+*.pem
+*.key
+
+# generated types / caches
+*.tsbuildinfo
+next-env.d.ts
+coverage/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# os / editor clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
