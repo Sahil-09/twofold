@@ -6,6 +6,7 @@ import { Icon, type IconName } from "@/components/icons";
 import { PushToggle } from "@/components/PushToggle";
 import { SettingSwitch } from "@/components/SettingSwitch";
 import { ThemePicker } from "@/components/ThemePicker";
+import { unreadActivityCount } from "@/lib/activity";
 import { getPartner, requireUser } from "@/lib/auth";
 import { initials } from "@/lib/format";
 import { partnerHasNew } from "@/lib/items";
@@ -50,7 +51,7 @@ function Row({
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const partner = await getPartner(user.id);
+  const [partner, unread] = await Promise.all([getPartner(user.id), unreadActivityCount(user.id)]);
   const since = user.createdAt.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   const hasNew =
     partner && user.notifyPartnerUpdates ? await partnerHasNew(partner.id, user.partnerSeenAt) : false;
@@ -58,7 +59,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <Header user={user} section="Settings" />
+      <Header user={user} section="Settings" unread={unread} />
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-5 pb-6 pt-2">
@@ -165,10 +166,6 @@ export default async function SettingsPage() {
                     Alerts are off until the VAPID keys are set on the deployment.
                   </p>
                 )}
-                <p className="text-label-sm text-outline">
-                  Prices are re-checked once a day on the server, so a drop lands here the next
-                  morning.
-                </p>
               </div>
               {divider}
               <Row
@@ -212,7 +209,6 @@ export default async function SettingsPage() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-title-md font-semibold">Theme Mode</span>
-                  <span className="text-label-sm text-outline">Warm palette</span>
                 </div>
                 <ThemePicker value={user.theme} />
               </div>

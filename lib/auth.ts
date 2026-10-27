@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { db } from "./db";
 import type { SessionDoc, Theme, UserDoc } from "./types";
 
@@ -42,7 +43,8 @@ export async function destroySession(): Promise<void> {
   jar.delete(COOKIE);
 }
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+/** Cached per render pass: the layout and the page must not each pay for a session + user read. */
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
 
@@ -65,7 +67,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     partnerSeenAt: user.partnerSeenAt,
     createdAt: user.createdAt,
   };
-}
+});
 
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();

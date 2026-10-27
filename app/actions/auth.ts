@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { createSession, destroySession } from "@/lib/auth";
 import { verifyPassword } from "@/lib/password";
 import { LoginInput } from "@/lib/schema";
+import { rememberTheme } from "@/lib/theme";
 import type { UserDoc } from "@/lib/types";
 
 export async function login(_prev: string | null, formData: FormData): Promise<string | null> {
@@ -22,6 +23,8 @@ export async function login(_prev: string | null, formData: FormData): Promise<s
   }
 
   await createSession(user._id);
+  // So a fresh device paints the right theme before it has any other state.
+  await rememberTheme(user.theme ?? "system");
   redirect("/");
 }
 

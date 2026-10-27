@@ -43,13 +43,28 @@ A local MongoDB service is usually running on `127.0.0.1:27017`; `.env.local` po
 3. **Every outbound URL fetch goes through `lib/ssrf.ts`** — scheme allowlist, DNS resolve and reject
    loopback/private/link-local/metadata, re-check each redirect hop, 8s timeout, 2MB body cap. This is
    the app's only real attack surface; do not bypass it "just for the parser".
-4. **No signup route.** A `/login` page and a session gate in the layout, nothing else.
+4. **No signup route.** A `/login` page and `requireUser()` in every page, nothing else. The layout
+   reads the theme cookie, never the user row.
 5. **Secret items stay secret.** `secret` is filtered in `getList`, hidden in `toView`, refused in
    `claims.ts`, and suppresses activity. The only exception is a partner who claimed it before the
    flag was set. Do not "fix" that filter into a client-side check.
 6. **A claim never writes activity.** `recordActivity` is called from item create/update/archive
    only. The bell, the nav dot and `/activity` are all computed from that: no claim, no purchase, no
    `given` may show up there.
+
+## Performance
+
+A tap must paint immediately and cost as few database round trips as possible, because the function
+and the database are only fast when they are in the same region.
+
+- `app/layout.tsx` reads the theme from the `twofold_theme` cookie (`lib/theme.ts`), so it never
+  queries. Login and the theme picker write that cookie.
+- `app/loading.tsx` is the skeleton the router paints while the page streams. Without it, dynamic
+  routes are not prefetched at all and every tap waits for a full server render.
+- `getCurrentUser` is wrapped in React `cache()`, and pages `Promise.all` the partner, the list, the
+  new-wish check and the bell count. Never add a serial `await` before those.
+- The Vercel function region must match the Atlas cluster region (Mumbai, `bom1`, `ap-south-1`).
+  A cross-region pair adds ~200 ms to every query and there are ~5 per navigation.
 
 ## Design
 

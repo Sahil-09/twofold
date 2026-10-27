@@ -3,7 +3,7 @@ import { markActivityReadAction } from "@/app/actions/activity";
 import { Header } from "@/components/Header";
 import { Icon, type IconName } from "@/components/icons";
 import { OnMount } from "@/components/OnMount";
-import { activityFor } from "@/lib/activity";
+import { activityFor, unreadActivityCount } from "@/lib/activity";
 import { getPartner, requireUser } from "@/lib/auth";
 import { relativeTime } from "@/lib/format";
 
@@ -17,13 +17,16 @@ const COPY: Record<string, { icon: IconName; line: string }> = {
 
 export default async function ActivityPage() {
   const user = await requireUser();
-  const partner = await getPartner(user.id);
-  const events = await activityFor(user.id);
+  const [partner, events, unread] = await Promise.all([
+    getPartner(user.id),
+    activityFor(user.id),
+    unreadActivityCount(user.id),
+  ]);
   const name = partner?.displayName ?? "Your partner";
 
   return (
     <>
-      <Header user={user} section="Activity" />
+      <Header user={user} section="Activity" unread={unread} />
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-4 pt-2">

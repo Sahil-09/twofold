@@ -7,6 +7,7 @@ import { ItemCard } from "@/components/ItemCard";
 import { ListControls } from "@/components/ListControls";
 import { OnMount } from "@/components/OnMount";
 import { Reservations } from "@/components/Reservations";
+import { unreadActivityCount } from "@/lib/activity";
 import { getPartner, requireUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 import { getList, partnerHasNew } from "@/lib/items";
@@ -27,8 +28,12 @@ export default async function HomePage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireUser();
-  const partner = await getPartner(user.id);
-  const params = await searchParams;
+  // The partner, the URL and the bell are independent, so they share one round of waiting.
+  const [partner, params, unread] = await Promise.all([
+    getPartner(user.id),
+    searchParams,
+    unreadActivityCount(user.id),
+  ]);
   const tab = single(params.tab);
   const q = single(params.q);
   const rawPriority = single(params.priority);
@@ -36,11 +41,14 @@ export default async function HomePage({
   const rawSort = single(params.sort);
   const theirs = tab === "theirs" && partner !== null;
   const partnerReveals = theirs && partner?.surpriseMode === false;
-  const list = await getList(
-    user.id,
-    theirs && partner ? partner.id : user.id,
-    !theirs && user.surpriseMode === false,
-  );
+  const [list, hasNew] = await Promise.all([
+    getList(user.id, theirs && partner ? partner.id : user.id, !theirs && user.surpriseMode === false),
+    partner && user.notifyPartnerUpdates ? partnerHasNew(partner.id, user.partnerSeenAt) : false,
+  ]);
+  const owner = theirs && partner ? partner.displayName : user.displayName;
+  const firstCurrency = list.items.find((item) => item.price)?.price?.currency;
+  const total = list.items.reduce((sum, item) => sum + (item.price?.amount ?? 0), 0);
+  const reserved = list.items.filter((item) => item.claim).length;
 
   // Price sorts need one currency, or "cheapest" compares rupees with dollars.
   const currency = singleCurrency(list.items);
@@ -52,16 +60,9 @@ export default async function HomePage({
   const sort: ListSort = !currency && requested.startsWith("price") ? "wanted" : requested;
   const shown = applyList(list.items, { q, priority, state, sort });
 
-  const owner = theirs && partner ? partner.displayName : user.displayName;
-  const firstCurrency = list.items.find((item) => item.price)?.price?.currency;
-  const total = list.items.reduce((sum, item) => sum + (item.price?.amount ?? 0), 0);
-  const reserved = list.items.filter((item) => item.claim).length;
-  const hasNew =
-    partner && user.notifyPartnerUpdates ? await partnerHasNew(partner.id, user.partnerSeenAt) : false;
-
   return (
     <>
-      <Header user={user} section={theirs ? "Partners List" : "My List"} />
+      <Header user={user} section={theirs ? "Partners List" : "My List"} unread={unread} />
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-5 pb-4 pt-2">
@@ -134,12 +135,6 @@ export default async function HomePage({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 rounded-full bg-surface-low px-3 py-1.5 shadow-rest">
-                  <Icon name="heart" className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-label-sm font-semibold text-primary">Live Twin</span>
-                </div>
-              </div>
-              <div className="flex justify-end pt-2">
                 <div className="rounded-full bg-surface-low px-3 py-1.5">
                   <span className="text-label-sm font-medium text-on-surface-variant">
                     {list.items.length} {list.items.length === 1 ? "wish" : "wishes"} saved

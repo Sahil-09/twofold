@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
-import { getCurrentUser } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { isTheme, THEME_COOKIE } from "@/lib/theme";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -28,13 +29,15 @@ export const viewport: Viewport = {
 const themeScript = `(function(){try{var t=document.documentElement.dataset.theme;var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
+  // Cookie only: a database read here used to hold back every navigation's first paint.
+  const remembered = (await cookies()).get(THEME_COOKIE)?.value;
+  const theme = isTheme(remembered) ? remembered : "system";
 
   return (
     <html
       lang="en"
-      data-theme={user?.theme ?? "system"}
-      className={user?.theme === "dark" ? "dark" : undefined}
+      data-theme={theme}
+      className={theme === "dark" ? "dark" : undefined}
       suppressHydrationWarning
     >
       <head>

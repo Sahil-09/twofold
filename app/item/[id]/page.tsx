@@ -5,6 +5,7 @@ import { ConfirmSubmit } from "@/components/ConfirmSubmit";
 import { Header } from "@/components/Header";
 import { ItemFields } from "@/components/ItemFields";
 import { Thumb } from "@/components/Thumb";
+import { unreadActivityCount } from "@/lib/activity";
 import { getPartner, requireUser } from "@/lib/auth";
 import { getItem } from "@/lib/items";
 
@@ -18,15 +19,18 @@ export default async function ItemPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const user = await requireUser();
-  const partner = await getPartner(user.id);
-  const { id } = await params;
-  const { error } = await searchParams;
+  const [partner, { id }, { error }, unread] = await Promise.all([
+    getPartner(user.id),
+    params,
+    searchParams,
+    unreadActivityCount(user.id),
+  ]);
   const item = await getItem(user.id, id);
   if (!item) notFound();
 
   return (
     <>
-      <Header user={user} section="Edit wish" />
+      <Header user={user} section="Edit wish" unread={unread} />
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-4 pt-2">

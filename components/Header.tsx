@@ -1,13 +1,10 @@
 import Link from "next/link";
-import { unreadActivityCount } from "@/lib/activity";
 import type { CurrentUser } from "@/lib/auth";
 import { initials } from "@/lib/format";
 import { Icon, Pulse } from "./icons";
 
-/** Fixed twin header: wordmark, live dot, current section, activity bell, paired avatar. */
-export async function Header({ user, section }: { user: CurrentUser; section: string }) {
-  const unread = await unreadActivityCount(user.id);
-
+/** Fixed twin header. The unread count is fetched by the page so it can run alongside the list. */
+export function Header({ user, section, unread }: { user: CurrentUser; section: string; unread: number }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
       <div className="mx-auto flex h-16 max-w-md items-center justify-between px-4">
@@ -43,7 +40,6 @@ export async function Header({ user, section }: { user: CurrentUser; section: st
             className="flex items-center gap-1.5 rounded-full bg-surface-low px-2.5 py-1 shadow-rest"
             aria-label="Settings"
           >
-            <span className="hidden text-label-sm text-on-surface-variant sm:inline">Paired</span>
             <span className="relative flex items-center justify-center">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-secondary-container text-label-md font-bold text-secondary">
                 {initials(user.displayName)}

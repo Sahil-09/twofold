@@ -117,7 +117,8 @@ Three destinations, one mobile shell (fixed header + floating bottom nav).
 ## Files (rough)
 
 ```
-app/layout.tsx           session gate + theme bootstrap
+app/layout.tsx           theme cookie + theme bootstrap (no database read)
+app/loading.tsx          skeleton painted the moment a tab is tapped
 app/login/page.tsx       credentials form
 app/page.tsx             Mine / Theirs tabs
 app/activity/page.tsx    partner activity feed
@@ -131,7 +132,8 @@ lib/list.ts              search, filter and sort the serialized list in memory
 components/ListControls.tsx  search box, filter and sort chips (URL-driven)
 lib/view.ts              the serializer that hides claims
 lib/activity.ts          activity rows + push fan-out
-lib/auth.ts              scrypt sessions
+lib/auth.ts              scrypt sessions, cached per-request user
+lib/theme.ts             the theme cookie the layout reads
 lib/parse.ts             JSON-LD/OG extraction
 lib/ssrf.ts              URL validation + IP range rejection
 lib/push.ts              web-push wrapper

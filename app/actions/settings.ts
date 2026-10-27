@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { rememberTheme } from "@/lib/theme";
 import type { PushSubDoc, Theme, UserDoc } from "@/lib/types";
 
 export async function saveSettings(formData: FormData): Promise<void> {
@@ -13,12 +14,11 @@ export async function saveSettings(formData: FormData): Promise<void> {
   const theme = String(formData.get("theme") ?? "system") as Theme;
   if (!displayName) return;
 
+  const chosen = ["light", "dark", "system"].includes(theme) ? theme : "system";
   await db()
     .collection<UserDoc>("users")
-    .updateOne(
-      { _id: user.id },
-      { $set: { displayName, theme: ["light", "dark", "system"].includes(theme) ? theme : "system" } },
-    );
+    .updateOne({ _id: user.id }, { $set: { displayName, theme: chosen } });
+  await rememberTheme(chosen);
   revalidatePath("/");
   revalidatePath("/settings");
 }
@@ -27,6 +27,7 @@ export async function setTheme(theme: Theme): Promise<void> {
   const user = await requireUser();
   if (!["light", "dark", "system"].includes(theme)) return;
   await db().collection<UserDoc>("users").updateOne({ _id: user.id }, { $set: { theme } });
+  await rememberTheme(theme);
   revalidatePath("/");
   revalidatePath("/settings");
 }
@@ -67,8 +68,8 @@ export async function markPartnerSeenAction(): Promise<void> {
   await db()
     .collection<UserDoc>("users")
     .updateOne({ _id: user.id }, { $set: { partnerSeenAt: new Date() } });
+  // Only the tab bar's dot depends on this; the settings page re-renders on its next visit anyway.
   revalidatePath("/");
-  revalidatePath("/settings");
 }
 
 const SubscriptionInput = z.object({

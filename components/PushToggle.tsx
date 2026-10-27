@@ -87,15 +87,6 @@ export function PushToggle() {
     });
   }
 
-  if (state === "unsupported" || state === "blocked") {
-    return (
-      <p className="mt-1 max-w-[14rem] text-right text-label-sm text-outline">
-        {state === "unsupported"
-          ? "This browser can't do notifications. On iPhone, add Twofold to your Home Screen first."
-          : "Notifications are blocked for Twofold. Allow them in your browser settings, then reload."}
-      </p>
-    );
-  }
 
   return (
     <div className="flex flex-col items-end gap-1">
