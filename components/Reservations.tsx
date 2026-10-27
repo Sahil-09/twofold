@@ -35,7 +35,7 @@ export function Reservations({ tokens }: { tokens: string[] }) {
                 <div className="h-2 w-10 rounded-full bg-surface-high/70" />
               </div>
               <div className="absolute inset-0 grid place-items-center bg-surface/30 backdrop-blur-[3px]">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
+                <span className="text-label-sm font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
                   Reserved
                 </span>
               </div>

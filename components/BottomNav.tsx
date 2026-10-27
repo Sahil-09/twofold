@@ -19,7 +19,7 @@ export function BottomNav({
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 pb-safe">
       <div className="px-4 pb-2">
-        <div className="pointer-events-auto mx-auto flex h-16 max-w-md items-center justify-around rounded-full bg-surface/90 px-3 shadow-nav backdrop-blur-xl">
+        <div className="pointer-events-auto mx-auto flex h-16 max-w-md items-center justify-around rounded-full bg-surface/90 px-5 shadow-nav backdrop-blur-xl">
           {items.map((item) => {
             const current = item.key === active;
             return (

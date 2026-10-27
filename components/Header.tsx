@@ -29,7 +29,7 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
           >
             <Icon name="bell" className="h-4 w-4" />
             {unread > 0 ? (
-              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-on-primary">
+              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-label-sm font-bold leading-none text-on-primary">
                 {unread > 9 ? "9+" : unread}
               </span>
             ) : null}

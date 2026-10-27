@@ -65,7 +65,7 @@ export default async function HomePage({
       <Header user={user} section={theirs ? "Partners List" : "My List"} unread={unread} />
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
-        <div className="flex flex-col gap-5 pb-4 pt-2">
+        <div className="flex flex-col gap-6 pb-4 pt-3">
           {theirs ? <OnMount action={markPartnerSeenAction} /> : null}
           {theirs ? (
             <>

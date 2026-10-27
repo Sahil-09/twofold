@@ -62,7 +62,7 @@ export default async function SettingsPage() {
       <Header user={user} section="Settings" unread={unread} />
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
-        <div className="flex flex-col gap-5 pb-6 pt-2">
+        <div className="flex flex-col gap-6 pb-8 pt-3">
           <div className="relative overflow-hidden rounded-3xl bg-surface-lowest p-5 shadow-rest">
             <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gradient-to-br from-primary-fixed/40 via-secondary-fixed/20 to-transparent blur-2xl" />
             <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-gradient-to-tr from-secondary-container/30 to-transparent blur-xl" />
@@ -117,8 +117,8 @@ export default async function SettingsPage() {
             </button>
           </form>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between px-1">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between px-2">
               <span className="section-title">Wishlist Sync &amp; Rules</span>
               <span className="flex items-center gap-1 text-label-sm text-primary">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
@@ -213,7 +213,7 @@ export default async function SettingsPage() {
                 <ThemePicker value={user.theme} />
               </div>
               {divider}
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="truncate text-label-lg font-semibold">{user.email}</p>
                   <p className="text-label-sm text-on-surface-variant">
