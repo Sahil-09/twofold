@@ -105,33 +105,33 @@
 
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 
-  /* The Stitch type scale. */
-  --text-label-sm: 12px;
-  --text-label-sm--line-height: 16px;
-  --text-label-sm--letter-spacing: 0.02em;
-  --text-label-md: 13px;
-  --text-label-md--line-height: 20px;
-  --text-label-md--letter-spacing: 0.015em;
-  --text-label-lg: 16px;
-  --text-label-lg--line-height: 32px;
+  /* The Stitch type scale — values taken verbatim from the design system. */
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 14px;
+  --text-label-sm--letter-spacing: 0.03em;
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--letter-spacing: 0.02em;
+  --text-label-lg: 14px;
+  --text-label-lg--line-height: 20px;
   --text-label-lg--letter-spacing: 0.01em;
-  --text-body-md: 15px;
-  --text-body-md--line-height: 24px;
-  --text-body-lg: 18px;
-  --text-body-lg--line-height: 30px;
-  --text-title-md: 20px;
-  --text-title-md--line-height: 28px;
-  --text-headline-sm: 22px;
-  --text-headline-sm--line-height: 30px;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 22px;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 26px;
+  --text-title-md: 18px;
+  --text-title-md--line-height: 26px;
+  --text-headline-sm: 20px;
+  --text-headline-sm--line-height: 28px;
   --text-headline-sm--letter-spacing: -0.01em;
-  --text-headline-md: 26px;
-  --text-headline-md--line-height: 34px;
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
   --text-headline-md--letter-spacing: -0.015em;
-  --text-headline-lg-mobile: 28px;
-  --text-headline-lg-mobile--line-height: 38px;
+  --text-headline-lg-mobile: 26px;
+  --text-headline-lg-mobile--line-height: 34px;
   --text-headline-lg-mobile--letter-spacing: -0.015em;
-  --text-headline-lg: 34px;
-  --text-headline-lg--line-height: 44px;
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
   --text-headline-lg--letter-spacing: -0.02em;
 
   --radius-card: 1.5rem;
@@ -198,7 +198,7 @@
     @apply text-label-sm font-semibold uppercase tracking-[0.04em] text-on-surface-variant;
   }
   .section-title {
-    @apply px-2 text-[13px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant;
+    @apply text-label-md font-medium uppercase tracking-[0.08em] text-on-surface-variant;
   }
   /* Borderless field card from the Add Wish mock. */
   .field-card {

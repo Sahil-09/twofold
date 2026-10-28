@@ -5,7 +5,7 @@ const items: { key: "mine" | "theirs" | "settings"; label: string; href: string;
   [
     { key: "mine", label: "My List", href: "/", icon: "heart" },
     { key: "theirs", label: "Partner's List", href: "/?tab=theirs", icon: "gift" },
-    { key: "settings", label: "Shared Settings", href: "/settings", icon: "tune" },
+    { key: "settings", label: "Settings", href: "/settings", icon: "tune" },
   ];
 
 /** Floating bottom pill from the Stitch screens. The partner dot is server-computed, never decorative. */
