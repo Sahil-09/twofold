@@ -9,14 +9,10 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
     <header className="fixed inset-x-0 top-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
       <div className="mx-auto flex h-16 max-w-md items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-1.5">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-fixed text-primary">
-            <Icon name="heart" className="h-4 w-4" />
-          </span>
           <span className="ml-1 flex flex-col">
             <span className="flex items-center gap-1.5">
-              <span className="text-title-md font-bold tracking-tight">Twofold</span>
+              <span className="text-title-md font-bold tracking-tight">{section}</span>
             </span>
-            <span className="text-label-sm capitalize text-outline">{section}</span>
           </span>
         </Link>
 

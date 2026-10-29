@@ -38,9 +38,9 @@ export function isPublicAddress(ip: string): boolean {
   return false;
 }
 
-const MAX_BYTES = 2_000_000;
+export const MAX_BYTES = 2_000_000;
 const TIMEOUT_MS = 8_000;
-const MAX_REDIRECTS = 2;
+const MAX_REDIRECTS = 5;
 const REDIRECTS = new Set([301, 302, 303, 307, 308]);
 
 export type PageResult =

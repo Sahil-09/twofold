@@ -84,9 +84,101 @@ test("falls back to Amazon's gallery image and offscreen price", () => {
 
   const draft = parseProduct(html, "https://www.amazon.in/dp/B0HC3PWD6X");
   assert.equal(draft.title, "DROGO Feather Node Office Chair");
-  assert.equal(draft.imageUrl, "https://m.media-amazon.com/images/I/7125LCcVS-L._SY355_.jpg");
+  assert.equal(draft.imageUrl, "https://m.media-amazon.com/images/I/7125LCcVS-L.jpg");
   assert.equal(draft.priceAmount, 12499);
   assert.equal(draft.priceCurrency, "INR");
+});
+
+test("picks the Product that carries an offer, not the first Product", () => {
+  const html = `<script type="application/ld+json">{"@graph":[
+    {"@type":"Product","name":"Variant Shell"},
+    {"@type":"Product","name":"Real Thing","image":"https://cdn.shop/real.jpg",
+     "offers":{"@type":"Offer","price":"499","priceCurrency":"INR"}}
+  ]}</script>`;
+  const draft = parseProduct(html, "https://shop.example/p/x");
+  assert.equal(draft.title, "Real Thing");
+  assert.equal(draft.priceAmount, 499);
+  assert.equal(draft.priceCurrency, "INR");
+});
+
+test("reads priceSpecification lists and nested offers", () => {
+  const specs = parseProduct(
+    `<script type="application/ld+json">{"@type":"Product","name":"Chair","offers":{
+      "priceSpecification":[{"price":"799"},{"price":"699"}],"priceCurrency":"INR"}}</script>`,
+    "https://shop.example/c",
+  );
+  assert.equal(specs.priceAmount, 699);
+  const nested = parseProduct(
+    `<script type="application/ld+json">{"@type":"Product","name":"Chair","offers":{"offers":[
+      {"price":"999"},{"price":"599"}]}}</script>`,
+    "https://shop.example/c",
+  );
+  assert.equal(nested.priceAmount, 599);
+  assert.equal(nested.priceCurrency, undefined);
+});
+
+test("prefers the Amazon buy-box price over a struck-through list price", () => {
+  const html = `
+    <div class="a-section s-list-price">List: <span class="a-offscreen">₹14,999.00</span></div>
+    <div id="corePriceDisplay_desktop_feature_div">
+      <span class="a-price"><span class="a-offscreen">₹12,499.00</span></span>
+    </div>`;
+  const draft = parseProduct(html, "https://www.amazon.in/dp/X3");
+  assert.equal(draft.priceAmount, 12499);
+  assert.equal(draft.priceCurrency, "INR");
+});
+
+test("falls back to schema.org microdata itemprop price", () => {
+  const withMeta = parseProduct(
+    `<meta itemprop="price" content="1299"><meta itemprop="priceCurrency" content="INR">`,
+    "https://nykaa.example/p/lip",
+  );
+  assert.equal(withMeta.priceAmount, 1299);
+  const withSpan = parseProduct(
+    `<span itemprop="price">899</span>`,
+    "https://ajio.example/p/shoe",
+  );
+  assert.equal(withSpan.priceAmount, 899);
+  assert.equal(withSpan.priceCurrency, undefined);
+});
+
+test("cleans Flipkart and Myntra title wrappers", () => {
+  const flipkart = parseProduct(
+    `<title>Buy Wildcraft Backpack Online at Best Prices in India - Flipkart.com</title>`,
+    "https://www.flipkart.com/p/1",
+  );
+  assert.equal(flipkart.title, "Wildcraft Backpack");
+  const myntra = parseProduct(
+    `<title>Buy Hidesign Women Sling Bag - Handbags for Women 55680318 | Myntra</title>`,
+    "https://www.myntra.com/h/b/1",
+  );
+  assert.equal(myntra.title, "Hidesign Women Sling Bag - Handbags for Women 55680318");
+  const unknown = parseProduct(
+    `<title>Face Serum : Webstore.co.in</title>`,
+    "https://webstore.example/serum",
+  );
+  assert.equal(unknown.title, "Face Serum");
+});
+
+test("upscales Amazon and Flipkart thumbnail URLs", () => {
+  const amazon = parseProduct(
+    `<meta property="og:image" content="https://m.media-amazon.com/images/I/xyz._SX385_SY385_.jpg">`,
+    "https://www.amazon.in/dp/X4",
+  );
+  assert.equal(amazon.imageUrl, "https://m.media-amazon.com/images/I/xyz.jpg");
+  const flipkart = parseProduct(
+    `<meta property="og:image" content="https://rukminim1.flixcart.com/image/128/128/xif0800/tshirt/p/g/n.jpg?q=70">`,
+    "https://www.flipkart.com/p/2",
+  );
+  assert.equal(
+    flipkart.imageUrl,
+    "https://rukminim1.flixcart.com/image/832/832/xif0800/tshirt/p/g/n.jpg?q=70",
+  );
+  const untouched = parseProduct(
+    `<meta property="og:image" content="https://cdn.shop/thing.jpg">`,
+    "https://shop.example/thing",
+  );
+  assert.equal(untouched.imageUrl, "https://cdn.shop/thing.jpg");
 });
 
 test("falls back to the landing image when the gallery JSON is absent", () => {
