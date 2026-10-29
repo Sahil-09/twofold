@@ -75,7 +75,7 @@ function getBrowser(): Promise<Browser> {
         args: [...chromium.args, "--no-sandbox", "--disable-dev-shm-usage"],
         defaultViewport: { width: 1280, height: 800 },
         executablePath,
-        headless: "shell",
+        headless: true,
       });
     } catch (error) {
       if (process.platform === "linux") throw error;
@@ -85,7 +85,7 @@ function getBrowser(): Promise<Browser> {
         args: ["--no-sandbox", "--disable-dev-shm-usage"],
         defaultViewport: { width: 1280, height: 800 },
         executablePath: local,
-        headless: "shell",
+        headless: true,
       });
     }
   })().catch((error) => {
