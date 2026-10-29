@@ -34,6 +34,9 @@ export async function parseLink(raw: string): Promise<ParseResult> {
   // Order: plain fetch -> Chromium render when the fetch was blocked or read nothing.
   let page: PageResult = await fetchPage(link);
   let draft = page.ok ? parseProduct(page.html, page.finalUrl) : undefined;
+  if (page.ok && draft && /site maintenance/i.test(draft.title ?? "")) {
+    draft = undefined;
+  }
   if (!page.ok || draft?.title === undefined) {
     const rendered = await fetchRendered(link);
     if (rendered.ok) {

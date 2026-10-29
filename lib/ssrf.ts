@@ -42,6 +42,8 @@ export const MAX_BYTES = 2_000_000;
 const TIMEOUT_MS = 8_000;
 const MAX_REDIRECTS = 5;
 const REDIRECTS = new Set([301, 302, 303, 307, 308]);
+const linuxChrome =
+  "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
 export type PageResult =
   | { ok: true; html: string; finalUrl: string }
@@ -85,8 +87,7 @@ export async function fetchPage(rawUrl: string, base?: string): Promise<PageResu
         redirect: "manual",
         signal: AbortSignal.timeout(TIMEOUT_MS),
         headers: {
-          "user-agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36",
+          "user-agent": linuxChrome,
           accept: "text/html,application/xhtml+xml",
           "accept-language": "en",
         },

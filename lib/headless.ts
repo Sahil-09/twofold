@@ -6,7 +6,7 @@ import { MAX_BYTES, type PageResult } from "@/lib/ssrf";
 const fail = (error: string): PageResult => ({ ok: false, error });
 
 const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36";
+  "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
 /**
  * Renders a page with Chromium for shops that bot-check the plain fetch.
@@ -31,10 +31,10 @@ export async function fetchRendered(rawUrl: string): Promise<PageResult> {
   let browser: Browser | undefined;
   try {
     browser = await launchBrowser();
-    const context = await browser.newContext({ userAgent: UA });
+    const context = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 800 }, locale: "en-IN" });
     const page = await context.newPage();
     try {
-      await page.goto(rawUrl, { waitUntil: "load", timeout: 30_000 });
+      await page.goto(rawUrl, { waitUntil: "commit", timeout: 30_000 });
       // Savana/Meesho-style SPAs hydrate after load; give them a brief runway.
       await page.waitForTimeout(1_500);
       try {
@@ -42,7 +42,29 @@ export async function fetchRendered(rawUrl: string): Promise<PageResult> {
       } catch {
         // Ignore — read whatever we have.
       }
-      const html = await page.content();
+      let html = await page.content();
+      // Myntra occasionally aborts the HTTP/2 stream (net::ERR_HTTP2_PROTOCOL_ERROR).
+      // When that happens, still try to read whatever the renderer received.
+      if (!/dram|<h1/i.test(html)) {
+        await page.waitForTimeout(2_000);
+        try {
+          html = await page.content();
+        } catch {
+          // leave as-is
+        }
+      }
+      const title = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").trim();
+      if (/site maintenance/i.test(html) || /site maintenance/i.test(title)) {
+        // Myntra/Akamai occasionally serve a maintenance gate on first request;
+        // reload after a short wait before bailing.
+        await page.waitForTimeout(3_000);
+        try {
+          await page.reload({ waitUntil: "load", timeout: 30_000 });
+        } catch {
+          // fall through with original HTML
+        }
+        await page.waitForTimeout(1_500);
+      }
       const finalUrl = page.url();
       return { ok: true, html: html.slice(0, MAX_BYTES), finalUrl };
     } finally {
@@ -82,7 +104,7 @@ async function launchBrowser(): Promise<Browser> {
       if (!local) throw err;
       return pwChromium.launch({
         headless: true,
-        args: ["--no-sandbox", "--disable-dev-shm-usage"],
+        args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled", "--disable-http2"],
         executablePath: local,
       });
     }
@@ -91,7 +113,7 @@ async function launchBrowser(): Promise<Browser> {
   const cb = chromiumBin;
   return pwChromium.launch({
     headless: true,
-    args: [...cb.args, "--no-sandbox", "--disable-dev-shm-usage"],
+    args: [...cb.args, "--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled", "--disable-http2"],
     executablePath: await cb.executablePath(),
   });
 }
