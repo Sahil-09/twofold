@@ -34,7 +34,12 @@ export async function parseLink(raw: string): Promise<ParseResult> {
   // Order: plain fetch -> Chromium render when the fetch was blocked or read nothing.
   let page: PageResult = await fetchPage(link);
   let draft = page.ok ? parseProduct(page.html, page.finalUrl) : undefined;
-  if (page.ok && draft && /site maintenance/i.test(draft.title ?? "")) {
+  // Gate pages (Myntra "Site Maintenance" etc.) still carry a title, so detect
+  // them as failed reads before deciding to fall through to Chromium.
+  const gateTitle = /site maintenance|bot check|captcha|access denied|page not found|^products$/i.test(
+    draft?.title ?? "",
+  );
+  if (page.ok && draft && gateTitle) {
     draft = undefined;
   }
   if (!page.ok || draft?.title === undefined) {
