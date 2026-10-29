@@ -69,7 +69,14 @@ export function ItemCard({
 
         <div className="flex items-center gap-4">
           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl shadow-sm">
-            <Thumb src={item.imageUrl} alt={item.title} className="h-24 w-24" />
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block h-24 w-24"
+            >
+              <Thumb src={item.imageUrl} alt={item.title} className="h-24 w-24" />
+            </a>
             {item.claim?.bought ? (
               <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-surface-lowest/90 text-primary backdrop-blur-sm">
                 <Icon name="check" className="h-3 w-3" />
