@@ -1,17 +1,25 @@
-import chromium from "@sparticuz/chromium";
-import puppeteer, { type Browser } from "puppeteer-core";
+import chromiumBin from "@sparticuz/chromium";
+import { chromium as pwChromium, type Browser } from "playwright-core";
 import { existsSync } from "node:fs";
 import { MAX_BYTES, type PageResult } from "@/lib/ssrf";
 
 const fail = (error: string): PageResult => ({ ok: false, error });
 
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36";
+
 /**
- * Renders a page with real Chromium for shops that bot-check the plain fetch
- * (Flipkart, Myntra…). Reuses one browser per warm function; a failed render
- * (cold-start extraction, OOM) is a normal failure, never an exception.
- * shortcut: Chromium makes its own outbound connections, so the SSRF per-hop DNS
- * re-check of lib/ssrf.ts does not apply here — acceptable because only the two
- * seeded accounts can ever pass a URL in.
+ * Renders a page with Chromium for shops that bot-check the plain fetch.
+ *
+ * Mirrors the working braen-api /attendance pattern: playwright-core drives the
+ * browser, @sparticuz/chromium ships the binary on Vercel. playwright-core runs
+ * headless off-screen (no display dependency — the failure mode that drove the
+ * puppeteer-core path down in Vercel's headless container).
+ *
+ * shortcut: local dev relies on a `playwright install chromium` cache; if absent
+ * we fall back to a system browser on Windows (dev only). Vercel always uses
+ * the bundled binary. Fresh browser per request (matches braen) — adds 3-8s but
+ * avoids the warm-container disconnected-browser trap.
  */
 export async function fetchRendered(rawUrl: string): Promise<PageResult> {
   try {
@@ -20,32 +28,34 @@ export async function fetchRendered(rawUrl: string): Promise<PageResult> {
     return fail("That link points somewhere private.");
   }
 
+  let browser: Browser | undefined;
   try {
-    const browser = await getBrowser();
-    const page = await browser.newPage();
+    browser = await launchBrowser();
+    const context = await browser.newContext({ userAgent: UA });
+    const page = await context.newPage();
     try {
-      await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0 Safari/537.36",
-      );
       await page.goto(rawUrl, { waitUntil: "load", timeout: 30_000 });
       // Savana/Meesho-style SPAs hydrate after load; give them a brief runway.
-      await new Promise((resolve) => setTimeout(resolve, 1_500));
-      await page.waitForNetworkIdle({ idleTime: 1_000, timeout: 10_000 }).catch(() => {});
+      await page.waitForTimeout(1_500);
+      try {
+        await page.waitForLoadState("networkidle", { timeout: 10_000 });
+      } catch {
+        // Ignore — read whatever we have.
+      }
       const html = await page.content();
       const finalUrl = page.url();
       return { ok: true, html: html.slice(0, MAX_BYTES), finalUrl };
     } finally {
       await page.close();
+      await context.close();
     }
   } catch (error) {
-    // The browser may have died mid-render — drop it so the next call relaunches.
-    browser = undefined;
     console.error("fetchRendered failed", error);
     return fail("That page wouldn't render for us.");
+  } finally {
+    await browser?.close();
   }
 }
-
-let browser: Promise<Browser> | undefined;
 
 function findLocalBrowser(): string | undefined {
   const candidates =
@@ -60,37 +70,28 @@ function findLocalBrowser(): string | undefined {
           "/usr/bin/chromium-browser",
           "/usr/bin/chromium",
         ];
-  try {
-    return candidates.find((candidate) => existsSync(candidate));
-  } catch {
-    return undefined;
-  }
+  return candidates.find((candidate) => existsSync(candidate));
 }
 
-function getBrowser(): Promise<Browser> {
-  browser ??= (async () => {
+async function launchBrowser(): Promise<Browser> {
+  if (!process.env.VERCEL) {
     try {
-      const executablePath = await chromium.executablePath();
-      return await puppeteer.launch({
-        args: [...chromium.args, "--no-sandbox", "--disable-dev-shm-usage"],
-        defaultViewport: { width: 1280, height: 800 },
-        executablePath,
-        headless: true,
-      });
-    } catch (error) {
-      if (process.platform === "linux") throw error;
+      return await pwChromium.launch({ headless: true });
+    } catch (err) {
       const local = findLocalBrowser();
-      if (!local) throw error;
-      return await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-dev-shm-usage"],
-        defaultViewport: { width: 1280, height: 800 },
-        executablePath: local,
+      if (!local) throw err;
+      return pwChromium.launch({
         headless: true,
+        args: ["--no-sandbox", "--disable-dev-shm-usage"],
+        executablePath: local,
       });
     }
-  })().catch((error) => {
-    browser = undefined;
-    throw error;
+  }
+
+  const cb = chromiumBin;
+  return pwChromium.launch({
+    headless: true,
+    args: [...cb.args, "--no-sandbox", "--disable-dev-shm-usage"],
+    executablePath: await cb.executablePath(),
   });
-  return browser;
 }
