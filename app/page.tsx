@@ -16,6 +16,7 @@ import { PRIORITY_ORDER } from "@/lib/priority";
 import type { Priority } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 const SORTS: ListSort[] = ["wanted", "newest", "priceAsc", "priceDesc"];
 

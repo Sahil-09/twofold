@@ -28,7 +28,9 @@ export async function fetchRendered(rawUrl: string): Promise<PageResult> {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0 Safari/537.36",
       );
       await page.goto(rawUrl, { waitUntil: "load", timeout: 30_000 });
-      await page.waitForNetworkIdle({ idleTime: 600, timeout: 8_000 }).catch(() => {});
+      // Savana/Meesho-style SPAs hydrate after load; give them a brief runway.
+      await new Promise((resolve) => setTimeout(resolve, 1_500));
+      await page.waitForNetworkIdle({ idleTime: 1_000, timeout: 10_000 }).catch(() => {});
       const html = await page.content();
       const finalUrl = page.url();
       return { ok: true, html: html.slice(0, MAX_BYTES), finalUrl };
@@ -70,7 +72,7 @@ function getBrowser(): Promise<Browser> {
     try {
       const executablePath = await chromium.executablePath();
       return await puppeteer.launch({
-        args: chromium.args,
+        args: [...chromium.args, "--no-sandbox", "--disable-dev-shm-usage"],
         defaultViewport: { width: 1280, height: 800 },
         executablePath,
         headless: "shell",
@@ -80,7 +82,7 @@ function getBrowser(): Promise<Browser> {
       const local = findLocalBrowser();
       if (!local) throw error;
       return await puppeteer.launch({
-        args: ["--no-sandbox"],
+        args: ["--no-sandbox", "--disable-dev-shm-usage"],
         defaultViewport: { width: 1280, height: 800 },
         executablePath: local,
         headless: "shell",
