@@ -32,14 +32,13 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
 
           <Link
             href="/settings"
-            className="flex items-center gap-1.5 rounded-full bg-surface-low px-2.5 py-1 shadow-rest"
+            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 shadow-rest"
             aria-label="Settings"
           >
             <span className="relative flex items-center justify-center">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-secondary-container text-label-md font-bold text-secondary">
                 {initials(user.displayName)}
               </span>
-              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary" />
             </span>
           </Link>
         </div>
