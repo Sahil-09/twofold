@@ -4,14 +4,14 @@ import { PRIORITIES, priorityIcon, priorityLabel, priorityRank } from "../lib/pr
 import type { Priority } from "../lib/types.ts";
 
 test("list order puts the most wanted first", () => {
-  const sorted = (["nice", "essential", "high", "dream"] as Priority[]).sort(
+  const sorted = (["nice", "toppick", "worth", "everyday", "dream"] as Priority[]).sort(
     (a, b) => priorityRank(a) - priorityRank(b),
   );
-  assert.deepEqual(sorted, ["dream", "high", "essential", "nice"]);
+  assert.deepEqual(sorted, ["everyday", "toppick", "nice", "worth", "dream"]);
 });
 
 test("an unknown legacy priority sorts last instead of vanishing", () => {
-  assert.equal(priorityRank("must" as Priority), 4);
+  assert.equal(priorityRank("must" as Priority), 5);
   assert.ok(priorityRank("must" as Priority) > priorityRank("nice"));
 });
 

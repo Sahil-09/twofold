@@ -10,7 +10,7 @@ export type ItemFieldsDefaults = {
   imageUrl?: string;
   priceAmount?: number;
   priceCurrency?: string;
-  priority?: "dream" | "high" | "essential" | "nice";
+  priority?: "everyday" | "toppick" | "nice" | "worth" | "dream";
   quantity?: number;
   occasionLabel?: string;
   occasionDate?: string;
@@ -116,12 +116,13 @@ export function ItemFields({
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Priority" htmlFor="priority">
-          <div className="field-card relative flex items-center">
+          <span className="relative flex items-center gap-2 rounded-full bg-surface-container px-3.5 py-2.5 shadow-rest">
             <select
+              aria-label="Priority"
               id="priority"
               name="priority"
-              defaultValue={defaults?.priority ?? "nice"}
-              className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-body-md text-on-surface outline-none"
+              defaultValue={defaults?.priority ?? "everyday"}
+              className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-body-md text-on-surface outline-none focus-visible:outline-2 focus-visible:outline-primary"
             >
               {PRIORITIES.map((entry) => (
                 <option key={entry.value} value={entry.value}>
@@ -131,9 +132,9 @@ export function ItemFields({
             </select>
             <Icon
               name="chevronDown"
-              className="pointer-events-none absolute right-3 h-4 w-4 text-outline"
+              className="pointer-events-none h-4 w-4 text-outline"
             />
-          </div>
+          </span>
         </Field>
 
         <Field label="How many" htmlFor="quantity">

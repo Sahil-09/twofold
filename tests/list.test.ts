@@ -34,9 +34,9 @@ test("search looks at the title, the note and the shop host, case-insensitively"
 });
 
 test("the priority filter keeps only that priority", () => {
-  const all = [item("a", { priority: "dream" }), item("b", { priority: "high" }), lamp];
+  const all = [item("a", { priority: "dream" }), item("b", { priority: "toppick" }), lamp];
   assert.deepEqual(ids(applyList(all, { priority: "dream" })), ["a"]);
-  assert.deepEqual(ids(applyList(all, { priority: "all" })), ["a", "b", "lamp"]);
+  assert.deepEqual(ids(applyList(all, { priority: "all" })), ["b", "lamp", "a"]);
 });
 
 test("planned and unplanned only look at the claim the viewer already has", () => {
@@ -52,9 +52,9 @@ test("most wanted is the default, newest breaks the tie", () => {
     item("nice", { priority: "nice", createdAt: "2026-03-01T00:00:00.000Z" }),
     item("dream-new", { priority: "dream", createdAt: "2026-03-02T00:00:00.000Z" }),
     item("dream-old", { priority: "dream", createdAt: "2026-03-01T00:00:00.000Z" }),
-    item("high", { priority: "high", createdAt: "2026-03-01T00:00:00.000Z" }),
+    item("high", { priority: "toppick", createdAt: "2026-03-01T00:00:00.000Z" }),
   ];
-  assert.deepEqual(ids(applyList(all)), ["dream-new", "dream-old", "high", "nice"]);
+  assert.deepEqual(ids(applyList(all)), ["high", "nice", "dream-new", "dream-old"]);
 });
 
 test("newest ignores priority", () => {

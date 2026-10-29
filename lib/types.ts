@@ -1,7 +1,7 @@
 export type Theme = "light" | "dark" | "system";
 
 /** Most wanted first; the string values are the form's values, the order is in lib/priority.ts. */
-export type Priority = "dream" | "high" | "essential" | "nice";
+export type Priority = "everyday" | "toppick" | "nice" | "worth" | "dream";
 
 export type UserDoc = {
   _id: string;

@@ -4,9 +4,9 @@ import { ItemInput } from "../lib/schema.ts";
 
 const base = { title: "Linen robe" };
 
-test("priority defaults to nice and accepts the four Stitch levels", () => {
-  assert.equal(ItemInput.parse(base).priority, "nice");
-  for (const value of ["dream", "high", "essential", "nice"]) {
+test("priority defaults to everyday and accepts the five levels", () => {
+  assert.equal(ItemInput.parse(base).priority, "everyday");
+  for (const value of ["everyday", "toppick", "nice", "worth", "dream"]) {
     assert.equal(ItemInput.parse({ ...base, priority: value }).priority, value);
   }
   assert.equal(ItemInput.safeParse({ ...base, priority: "must" }).success, false);

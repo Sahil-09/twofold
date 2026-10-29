@@ -1,4 +1,4 @@
-// One-off: old rows used priority "must"; new rows also need a "seen" watermark.
+// One-off: legacy priority values migrate to the new 5-tier labels.
 // Usage: npm run migrate   (idempotent — safe to re-run)
 import { db } from "../lib/db.ts";
 
@@ -10,10 +10,19 @@ for (const file of [".env.local", ".env"]) {
 
 const database = db();
 
-const before = await database.collection("items").countDocuments({ priority: "must" });
-const items = await database
-  .collection("items")
-  .updateMany({ priority: "must" }, { $set: { priority: "dream" } });
+const mappings = [
+  ["must", "worth"],
+  ["high", "toppick"],
+  ["essential", "everyday"],
+] as const;
+
+let total = 0;
+for (const [from, to] of mappings) {
+  const before = await database.collection("items").countDocuments({ priority: from });
+  const result = await database.collection("items").updateMany({ priority: from }, { $set: { priority: to } });
+  total += result.modifiedCount;
+  console.log(`${from} → ${to} (modified ${result.modifiedCount} of ${before})`);
+}
 
 const users = await database
   .collection("users")
@@ -21,6 +30,6 @@ const users = await database
 
 await database.collection("activity").createIndex({ recipientId: 1, at: -1 });
 
-console.log(`must → dream: ${items.modifiedCount} of ${before}`);
+console.log(`total migrations: ${total}`);
 console.log(`partnerSeenAt stamped: ${users.modifiedCount}`);
 process.exit(0);

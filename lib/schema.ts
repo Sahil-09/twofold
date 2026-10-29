@@ -24,7 +24,7 @@ export const ItemInput = z.object({
   url: optionalUrl,
   imageUrl: optionalUrl,
   note: optionalText(2000),
-  priority: z.enum(["dream", "high", "essential", "nice"]).default("nice"),
+  priority: z.enum(["everyday", "toppick", "nice", "worth", "dream"]).default("everyday"),
   quantity: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? 1 : Number(v)),
     z.number().int().min(1).max(99),
@@ -39,7 +39,7 @@ export const ItemInput = z.object({
 
 export type ItemInput = z.infer<typeof ItemInput>;
 
-export const PRIORITY_VALUES = ["dream", "high", "essential", "nice"] as const satisfies readonly Priority[];
+export const PRIORITY_VALUES = ["everyday", "toppick", "nice", "worth", "dream"] as const satisfies readonly Priority[];
 
 export const LoginInput = z.object({
   email: z.string().trim().toLowerCase().email(),

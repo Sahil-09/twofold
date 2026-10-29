@@ -10,9 +10,13 @@ import { Thumb } from "./Thumb";
 /** Chip colours per priority; the Stitch partner card uses the filled variants. */
 const TONE: Record<Priority, { filled: string; text: string }> = {
   dream: { filled: "bg-secondary-fixed text-on-secondary-fixed", text: "text-secondary" },
-  high: { filled: "bg-primary-fixed text-on-primary-fixed", text: "text-primary" },
-  essential: { filled: "bg-tertiary-fixed text-on-tertiary-fixed", text: "text-tertiary" },
+  worth: { filled: "bg-primary-fixed text-on-primary-fixed", text: "text-primary" },
+toppick: { filled: "bg-tertiary-fixed text-on-tertiary-fixed", text: "text-tertiary" },
   nice: { filled: "bg-surface-container text-on-surface-variant", text: "text-on-surface-variant" },
+  everyday: {
+    filled: "bg-tertiary-fixed text-on-tertiary-fixed",
+    text: "text-tertiary",
+  },
 };
 
 export function ItemCard({
