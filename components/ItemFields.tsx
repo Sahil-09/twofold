@@ -92,13 +92,14 @@ export function ItemFields({
           </div>
         </Field>
 
-        <Field label="Currency" htmlFor="priceCurrency">
-          <div className="field-card relative flex items-center">
+<Field label="Currency" htmlFor="priceCurrency">
+          <span className="relative flex items-center gap-2 rounded-full bg-surface-container px-3.5 py-2.5 shadow-rest">
             <select
+              aria-label="Currency"
               id="priceCurrency"
               name="priceCurrency"
               defaultValue={currency}
-              className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-title-md text-on-surface outline-none"
+              className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-title-md text-on-surface outline-none focus-visible:outline-2 focus-visible:outline-primary"
             >
               {currencies.map((code) => (
                 <option key={code} value={code}>
@@ -108,9 +109,9 @@ export function ItemFields({
             </select>
             <Icon
               name="chevronDown"
-              className="pointer-events-none absolute right-3 h-4 w-4 text-outline"
+              className="pointer-events-none h-4 w-4 text-outline"
             />
-          </div>
+          </span>
         </Field>
       </div>
 
