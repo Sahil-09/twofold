@@ -42,11 +42,23 @@ export async function parseLink(raw: string): Promise<ParseResult> {
   if (page.ok && draft && gateTitle) {
     draft = undefined;
   }
+  // Fast path: when traditional fetch already gave title + price (+image), skip
+  // the 3-8s Chromium render entirely. Saves most of the latency.
+  if (!gateTitle && page.ok && draft?.title && draft.priceAmount !== undefined && draft.imageUrl) {
+    return {
+      ok: true,
+      draft: { ...draft, title: draft.title ?? titleFromUrl(page.finalUrl), url: page.finalUrl },
+      host: hostOf(page.finalUrl),
+    };
+  }
   if (!page.ok || draft?.title === undefined) {
     const rendered = await fetchRendered(link);
     if (rendered.ok) {
       const richer = parseProduct(rendered.html, rendered.finalUrl);
-      if (richer.title) {
+      const renderedGate = /site maintenance|bot check|captcha|access denied|page not found|^products$/i.test(
+        richer?.title ?? "",
+      );
+      if (richer.title && !renderedGate) {
         draft = richer;
         page = rendered;
       }
@@ -69,3 +81,4 @@ export async function parseLink(raw: string): Promise<ParseResult> {
     host: hostOf(page.finalUrl),
   };
 }
+

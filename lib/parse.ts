@@ -23,17 +23,25 @@ export function normalizeLink(raw: string): string | undefined {
 export function titleFromUrl(link: string): string | undefined {
   try {
     const segments = new URL(link).pathname.split("/").filter(Boolean);
-    const last = segments.at(-1)?.replace(/\.(html?|aspx?|php)$/i, "");
-    if (!last || last.length < 3) return undefined;
-    const words = last
-      .replace(/\d{4,}/g, " ")
-      .replace(/[-_+]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!words) return undefined;
-    // Skip opaque codes like an Amazon ASIN: no spaces, digits in it.
-    if (!words.includes(" ") && /\d/.test(words) && words.length >= 6) return undefined;
-    return words.slice(0, 80).replace(/\b\w/g, (char) => char.toUpperCase());
+    let candidate: string | undefined;
+    // Walk backwards so opaque trailing codes (ASINs, ids, "/p/850bex") don't
+    // win over the real product slug one or two segments earlier.
+    for (let i = segments.length - 1; i >= 0; i -= 1) {
+      const raw = segments[i].replace(/\.(html?|aspx?|php)$/i, "");
+      if (!raw || raw.length < 3) continue;
+      const words = raw
+        .replace(/\d{4,}/g, " ")
+        .replace(/[-_+]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!words) continue;
+      // Skip opaque codes like an Amazon ASIN: no spaces and digits in it.
+      if (!words.includes(" ") && /\d/.test(words) && words.length >= 6) continue;
+      candidate = words;
+      break;
+    }
+    if (!candidate) return undefined;
+    return candidate.slice(0, 80).replace(/\b\w/g, (char) => char.toUpperCase());
   } catch {
     return undefined;
   }

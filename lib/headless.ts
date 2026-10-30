@@ -5,6 +5,28 @@ import { MAX_BYTES, type PageResult } from "@/lib/ssrf";
 
 const fail = (error: string): PageResult => ({ ok: false, error });
 
+const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_MAX = 20;
+const pageCache = new Map<string, { html: string; expires: number }>();
+
+function cachedHtml(url: string): string | undefined {
+  const entry = pageCache.get(url);
+  if (!entry) return undefined;
+  if (entry.expires < Date.now()) {
+    pageCache.delete(url);
+    return undefined;
+  }
+  return entry.html;
+}
+
+function storeCache(url: string, html: string): void {
+  if (pageCache.size >= CACHE_MAX) {
+    const first = pageCache.keys().next().value;
+    if (first) pageCache.delete(first);
+  }
+  pageCache.set(url, { html, expires: Date.now() + CACHE_TTL });
+}
+
 const UA =
   "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
@@ -34,11 +56,11 @@ export async function fetchRendered(rawUrl: string): Promise<PageResult> {
     const context = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 800 }, locale: "en-IN" });
     const page = await context.newPage();
     try {
-      await page.goto(rawUrl, { waitUntil: "commit", timeout: 30_000 });
+      await page.goto(rawUrl, { waitUntil: "domcontentloaded", timeout: 20_000 });
       // Savana/Meesho-style SPAs hydrate after load; give them a brief runway.
-      await page.waitForTimeout(1_500);
+      await page.waitForTimeout(1_000).catch(() => undefined);
       try {
-        await page.waitForLoadState("networkidle", { timeout: 10_000 });
+        await page.waitForLoadState("networkidle", { timeout: 4_000 }).catch(() => undefined);
       } catch {
         // Ignore — read whatever we have.
       }
@@ -46,7 +68,7 @@ export async function fetchRendered(rawUrl: string): Promise<PageResult> {
       // Myntra occasionally aborts the HTTP/2 stream (net::ERR_HTTP2_PROTOCOL_ERROR).
       // When that happens, still try to read whatever the renderer received.
       if (!/dram|<h1/i.test(html)) {
-        await page.waitForTimeout(2_000);
+        await page.waitForTimeout(500).catch(() => undefined);
         try {
           html = await page.content();
         } catch {
