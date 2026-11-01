@@ -131,21 +131,18 @@ export default async function SettingsPage() {
               />
               <div className="h-px bg-surface-container" />
 
-              <div className="flex flex-row gap-3">
-                <Row
-                  icon="bell"
-                  tone="bg-tertiary-fixed/60 text-tertiary"
-                  title="Price Drop Alerts"
-                  description="Quiet alerts when a wish drops below its target price."
-                />
-                {pushConfigured() ? (
-                  <PushToggle />
-                ) : (
-                  <p className="text-label-md text-outline pl-14">
-                    Alerts are off until the VAPID keys are set on the deployment.
-                  </p>
-                )}
-              </div>
+              <Row
+                icon="bell"
+                tone="bg-tertiary-fixed/60 text-tertiary"
+                title="Price Drop Alerts"
+                description="Quiet alerts when a wish drops below its target price."
+                control={pushConfigured() ? <PushToggle /> : undefined}
+              />
+              {pushConfigured() ? null : (
+                <p className="pl-14 text-label-md text-outline">
+                  Alerts are off until the VAPID keys are set on the deployment.
+                </p>
+              )}
               <div className="h-px bg-surface-container" />
 
               <Row
