@@ -44,8 +44,7 @@ export async function parseLink(raw: string): Promise<ParseResult> {
   }
   // Fast path: when traditional fetch already gave title + price (+image), skip
   // the 3-8s Chromium render entirely. Saves most of the latency.
-  if (!gateTitle && page.ok && draft?.title && draft.priceAmount !== undefined && draft.imageUrl) {
-    console.log('hit this')
+  if (!gateTitle && page.ok && draft?.title && (!draft.priceAmount || draft.priceAmount !== undefined )&& draft.imageUrl) {
     return {
       ok: true,
       draft: { ...draft, title: draft.title ?? titleFromUrl(page.finalUrl), url: page.finalUrl },
