@@ -1,25 +1,37 @@
 # Use the official Microsoft Playwright image which includes Node.js and browsers
-FROM mcr.microsoft.com/playwright:v1.45.0-jammy
+FROM mcr.microsoft.com/playwright:v1.45.0-jammy AS base
 
 WORKDIR /app
 
-# Copy package files
+# Install dependencies only when needed
+FROM base AS deps
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Install the exact browser binary matching your installed playwright package
-RUN npx playwright install chromium
-
-# Copy the rest of the project
+# Rebuild the source code only when needed
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Build the Next.js app
 RUN npm run build
 
-# Expose the port Render assigns
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
 EXPOSE 3000
 
-# Start the Next.js production server
-CMD ["npm", "start"]
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
