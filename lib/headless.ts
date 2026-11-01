@@ -127,7 +127,7 @@ async function launchBrowser(): Promise<Browser> {
       return pwChromium.launch({
         headless: true,
         args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled", "--disable-http2"],
-        executablePath: local,
+        executablePath: process.env.CHROME_PATH || local,
       });
     }
   }
@@ -136,6 +136,6 @@ async function launchBrowser(): Promise<Browser> {
   return pwChromium.launch({
     headless: true,
     args: [...cb.args, "--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled", "--disable-http2"],
-    executablePath: await cb.executablePath(),
+    executablePath: process.env.CHROME_PATH ||  await cb.executablePath(),
   });
 }
