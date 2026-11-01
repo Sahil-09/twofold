@@ -9,6 +9,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
+# Install the exact browser binary matching your installed playwright package
+RUN npx playwright install chromium
+
 # Copy the rest of the project
 COPY . .
 
