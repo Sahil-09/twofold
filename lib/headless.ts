@@ -118,7 +118,10 @@ function findLocalBrowser(): string | undefined {
 }
 
 async function launchBrowser(): Promise<Browser> {
-  if (!process.env.VERCEL) {
+  const isVercel = !!process.env.VERCEL;
+
+  // 1. Local environment handling
+  if (!isVercel) {
     try {
       return await pwChromium.launch({ headless: true });
     } catch (err) {
@@ -132,10 +135,20 @@ async function launchBrowser(): Promise<Browser> {
     }
   }
 
-  const cb = chromiumBin;
+  // 2. Vercel Serverless Production Environment
+  let executablePath: string;
+  try {
+    executablePath = process.env.CHROME_PATH || (await chromiumBin.executablePath());
+  } catch (e) {
+    // Fallback if Sparticuz fails to resolve the path on certain Vercel regions
+    executablePath = "/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell";
+  }
+
+  const args = isVercel ? [...chromiumBin.args, "--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled", "--disable-http2"] : ["--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled", "--disable-http2"];
+
   return pwChromium.launch({
     headless: true,
-    args: [...cb.args, "--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled", "--disable-http2"],
-    executablePath: process.env.CHROME_PATH ||  await cb.executablePath(),
+    args,
+    executablePath,
   });
 }
