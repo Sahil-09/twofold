@@ -4,6 +4,7 @@ import { parseProduct } from "@/lib/parse";
 import { sendPush } from "@/lib/push";
 import { fetchRendered } from "@/lib/headless";
 import { fetchPage } from "@/lib/ssrf";
+import { fetchZenRows } from "@/lib/zenrows";
 import type { ItemDoc, PriceCheckDoc } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,8 @@ const PER_RUN = 40;
 const CONCURRENCY = 4;
 // Bot-blocked items may get one Chromium render each, but no more than this per run.
 const HEADLESS_PER_RUN = 4;
+// One ZenRows proxy read each, capped so a monthly 5,000-credit free plan lasts.
+const ZENROWS_PER_RUN = 10;
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
@@ -25,7 +28,7 @@ export async function GET(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const budget = { headless: HEADLESS_PER_RUN };
+  const budget = { headless: HEADLESS_PER_RUN, zenrows: ZENROWS_PER_RUN };
   const items = await db()
     .collection<ItemDoc>("items")
     .find({ status: "wanted", url: { $exists: true }, targetPrice: { $exists: true } })
@@ -45,9 +48,18 @@ export async function GET(request: Request) {
   return Response.json({ checked, alerts, scanned: items.length });
 }
 
-async function checkItem(item: ItemDoc, budget: { headless: number }): Promise<boolean | "alert"> {
+async function checkItem(
+  item: ItemDoc,
+  budget: { headless: number; zenrows: number },
+): Promise<boolean | "alert"> {
   const now = new Date();
   let page = await fetchPage(item.url!);
+  // Blocked shops answer 200 with their home page, so a missing price is the trigger.
+  if ((!page.ok || parseProduct(page.html, page.finalUrl).priceAmount === undefined) && budget.zenrows > 0) {
+    budget.zenrows -= 1;
+    const proxied = await fetchZenRows(item.url!);
+    if (proxied.ok) page = proxied;
+  }
   if (!page.ok && budget.headless > 0) {
     budget.headless -= 1;
     const rendered = await fetchRendered(item.url!);

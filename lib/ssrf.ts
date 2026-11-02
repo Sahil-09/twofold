@@ -51,6 +51,38 @@ export type PageResult =
 
 const fail = (error: string): PageResult => ({ ok: false, error });
 
+export type UrlCheck = { ok: true; url: URL } | { ok: false; error: string };
+
+/**
+ * Scheme, credential and DNS checks. Shared by every outbound fetch so a third-party
+ * fetch (ZenRows) can't be handed a link the guard would have refused.
+ */
+export async function validateUrl(rawUrl: string, base?: string): Promise<UrlCheck> {
+  let url: URL;
+  try {
+    url = base ? new URL(rawUrl, base) : new URL(rawUrl);
+  } catch {
+    return { ok: false, error: "That doesn't look like a link." };
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return { ok: false, error: "Only http and https links work." };
+  }
+  if (url.username || url.password) return { ok: false, error: "That link points somewhere private." };
+
+  let addresses: string[];
+  try {
+    addresses = (await lookup(url.hostname, { all: true, verbatim: true })).map((a) => a.address);
+  } catch {
+    return { ok: false, error: "Couldn't find that site." };
+  }
+  if (addresses.length === 0 || !addresses.every(isPublicAddress)) {
+    return { ok: false, error: "That link points somewhere private." };
+  }
+
+  return { ok: true, url };
+}
+
 /**
  * Fetches a user-supplied URL with the SSRF guard applied to every hop.
  * shortcut: hostname is resolved, then fetch re-resolves it, so a hostile DNS server could
@@ -58,29 +90,11 @@ const fail = (error: string): PageResult => ({ ok: false, error });
  * upgrade to a pinned-IP undici dispatcher if this ever opens to more people.
  */
 export async function fetchPage(rawUrl: string, base?: string): Promise<PageResult> {
-  let url: URL;
-  try {
-    url = base ? new URL(rawUrl, base) : new URL(rawUrl);
-  } catch {
-    return fail("That doesn't look like a link.");
-  }
+  let checked = await validateUrl(rawUrl, base);
+  if (!checked.ok) return fail(checked.error);
+  let url = checked.url;
 
   for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
-    if (url.protocol !== "http:" && url.protocol !== "https:") {
-      return fail("Only http and https links work.");
-    }
-    if (url.username || url.password) return fail("That link points somewhere private.");
-
-    let addresses: string[];
-    try {
-      addresses = (await lookup(url.hostname, { all: true, verbatim: true })).map((a) => a.address);
-    } catch {
-      return fail("Couldn't find that site.");
-    }
-    if (addresses.length === 0 || !addresses.every(isPublicAddress)) {
-      return fail("That link points somewhere private.");
-    }
-
     let response: Response;
     try {
       response = await fetch(url, {
@@ -99,11 +113,9 @@ export async function fetchPage(rawUrl: string, base?: string): Promise<PageResu
     if (REDIRECTS.has(response.status)) {
       const location = response.headers.get("location");
       if (!location) return fail("The site sent a broken redirect.");
-      try {
-        url = new URL(location, url);
-      } catch {
-        return fail("The site sent a broken redirect.");
-      }
+      checked = await validateUrl(location, url.href);
+      if (!checked.ok) return fail(checked.error);
+      url = checked.url;
       continue;
     }
 
