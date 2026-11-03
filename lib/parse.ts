@@ -378,3 +378,86 @@ export function parseProduct(html: string, pageUrl: string): Draft {
     priceCurrency: currency?.slice(0, 3).toUpperCase(),
   };
 }
+
+/** Field names Extract reports, most trustworthy first. Their tree differs by shop. */
+const EXTRACT_PRICE_KEYS = ["selling_price", "current_price", "discounted_price", "sale_price", "price"];
+const EXTRACT_TITLE_KEYS = ["name", "title", "product_name"];
+const EXTRACT_IMAGE_KEYS = ["primary_image", "image_url", "image"];
+
+function findKey(node: unknown, key: string): unknown {
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const hit = findKey(item, key);
+      if (hit !== undefined) return hit;
+    }
+    return undefined;
+  }
+  if (!node || typeof node !== "object") return undefined;
+  const record = node as Record<string, unknown>;
+  if (record[key] !== undefined && record[key] !== null) return record[key];
+  for (const value of Object.values(record)) {
+    const hit = findKey(value, key);
+    if (hit !== undefined) return hit;
+  }
+  return undefined;
+}
+
+function firstKey(node: unknown, keys: string[]): unknown {
+  for (const key of keys) {
+    const hit = findKey(node, key);
+    if (hit !== undefined) return hit;
+  }
+  return undefined;
+}
+
+/** A failed parse or a shop's block page is not a product. */
+export function isGateTitle(title: string | undefined): boolean {
+  return /site maintenance|bot check|captcha|access denied|page not found|^products$|^online shopping india/i.test(
+    title ?? "",
+  );
+}
+
+/** Reads ZenRows Extract's `parsed` tree. Names vary by shop, so keys are matched, not pathed. */
+export function draftFromExtract(parsed: unknown): Draft {
+  if (!parsed || typeof parsed !== "object") return {};
+
+  const rawTitle = firstKey(parsed, EXTRACT_TITLE_KEYS);
+  const title =
+    typeof rawTitle === "string" ? rawTitle.replace(/(?:\s*\.\.\.)?\s*more$/i, "").trim() : undefined;
+  const amount = toNumber(firstKey(parsed, EXTRACT_PRICE_KEYS));
+  const rawImage = firstKey(parsed, EXTRACT_IMAGE_KEYS);
+  // Flipkart reports the page title in `pricing.currency`, so only a real code passes.
+  const rawCurrency = firstKey(parsed, ["currency"]);
+  const currency = typeof rawCurrency === "string" && /^[A-Z]{3}$/.test(rawCurrency.trim().toUpperCase())
+    ? rawCurrency.trim().toUpperCase()
+    : undefined;
+  const imageUrl =
+    typeof rawImage === "string" && /^https?:\/\//i.test(rawImage.trim()) ? rawImage.trim() : undefined;
+
+  return {
+    title: title || undefined,
+    imageUrl,
+    priceAmount: amount !== undefined && amount > 0 ? amount : undefined,
+    priceCurrency: currency,
+  };
+}
+
+/**
+ * Merges the two reads of one page: Extract's named price fields and our own HTML
+ * parse. Extract's price wins (a field, not a regex guess); our full title wins
+ * (Extract truncates long ones).
+ */
+export function draftFromPage(page: { ok: boolean; html?: string; finalUrl?: string; parsed?: unknown }): Draft | undefined {
+  if (!page.ok) return undefined;
+  const html = parseProduct(page.html ?? "", page.finalUrl ?? "");
+  const extra = draftFromExtract(page.parsed);
+  const title = (html.title && !isGateTitle(html.title) ? html.title : undefined) ?? extra.title;
+  if (!title) return undefined;
+
+  return {
+    title,
+    imageUrl: html.imageUrl ?? upscaleImage(extra.imageUrl),
+    priceAmount: extra.priceAmount ?? html.priceAmount,
+    priceCurrency: extra.priceCurrency ?? html.priceCurrency,
+  };
+}

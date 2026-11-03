@@ -46,7 +46,7 @@ const linuxChrome =
   "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
 
 export type PageResult =
-  | { ok: true; html: string; finalUrl: string }
+  | { ok: true; html: string; finalUrl: string; parsed?: unknown }
   | { ok: false; error: string };
 
 const fail = (error: string): PageResult => ({ ok: false, error });

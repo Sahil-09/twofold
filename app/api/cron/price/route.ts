@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
 import { money } from "@/lib/format";
-import { parseProduct } from "@/lib/parse";
+import { draftFromPage } from "@/lib/parse";
 import { sendPush } from "@/lib/push";
 import { fetchRendered } from "@/lib/headless";
 import { fetchPage } from "@/lib/ssrf";
-import { fetchZenRows } from "@/lib/zenrows";
+import { fetchZenRows, OUT_OF_CREDITS } from "@/lib/zenrows";
 import type { ItemDoc, PriceCheckDoc } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,8 @@ const CONCURRENCY = 4;
 const HEADLESS_PER_RUN = 4;
 // One ZenRows proxy read each, capped so a monthly 5,000-credit free plan lasts.
 const ZENROWS_PER_RUN = 10;
+// Set once an exhausted account answers 402/429, so the rest of the run skips it.
+let exhaustedUntil = 0;
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
@@ -55,23 +57,35 @@ async function checkItem(
   const now = new Date();
   let page = await fetchPage(item.url!);
   // Blocked shops answer 200 with their home page, so a missing price is the trigger.
-  if ((!page.ok || parseProduct(page.html, page.finalUrl).priceAmount === undefined) && budget.zenrows > 0) {
+  let draft = draftFromPage(page);
+  if (draft?.priceAmount === undefined && budget.zenrows > 0 && Date.now() >= exhaustedUntil) {
     budget.zenrows -= 1;
-    const proxied = await fetchZenRows(item.url!);
-    if (proxied.ok) page = proxied;
+    const proxied = await fetchZenRows(item.url!, page.ok ? page.finalUrl : undefined);
+    if (!proxied.ok && proxied.error === OUT_OF_CREDITS) {
+      // Credits reset at the start of the month; retrying sooner only adds noise.
+      exhaustedUntil = Date.now() + 6 * 60 * 60 * 1000;
+      budget.zenrows = 0;
+    }
+    const richer = draftFromPage(proxied);
+    if (richer?.priceAmount !== undefined) {
+      draft = richer;
+      page = proxied;
+    }
   }
   if (!page.ok && budget.headless > 0) {
     budget.headless -= 1;
     const rendered = await fetchRendered(item.url!);
-    if (rendered.ok) page = rendered;
+    if (rendered.ok) {
+      page = rendered;
+      draft = draftFromPage(rendered) ?? draft;
+    }
   }
   if (!page.ok) {
     await record(item._id, now, undefined, false, page.error);
     return false;
   }
 
-  const draft = parseProduct(page.html, page.finalUrl);
-  if (draft.priceAmount === undefined) {
+  if (draft?.priceAmount === undefined) {
     await record(item._id, now, undefined, false, "No price found on the page");
     return false;
   }
@@ -95,6 +109,9 @@ async function checkItem(
 
   const hit = item.targetPrice !== undefined && draft.priceAmount <= item.targetPrice;
   if (!hit || item.alertedAt) return true;
+  // A price that swung wildly is more likely a mis-parse than a real drop; require
+  // the same number twice before it wakes anyone up.
+  if (!(await plausible(item, draft.priceAmount, now))) return true;
 
   await db()
     .collection<ItemDoc>("items")
@@ -119,4 +136,21 @@ async function record(
   await db()
     .collection<PriceCheckDoc>("priceChecks")
     .insertOne({ _id: crypto.randomUUID(), itemId, checkedAt, price, ok, error });
+}
+
+/**
+ * True when the new price is close to the last stored one, or when the previous
+ * check already saw the same number (so a real drop still lands on day two).
+ */
+async function plausible(item: ItemDoc, amount: number, now: Date): Promise<boolean> {
+  const previous = item.price?.amount;
+  if (previous === undefined || previous <= 0) return true;
+  const ratio = amount / previous;
+  if (ratio >= 0.4 && ratio <= 2.5) return true;
+
+  const last = await db()
+    .collection<PriceCheckDoc>("priceChecks")
+    // Before this run's own row, which `record` already wrote.
+    .findOne({ itemId: item._id, ok: true, checkedAt: { $lt: now } }, { sort: { checkedAt: -1 } });
+  return last?.price === amount;
 }

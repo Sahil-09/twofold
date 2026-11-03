@@ -42,7 +42,8 @@ A local MongoDB service is usually running on `127.0.0.1:27017`; `.env.local` po
    An item becomes `archived` only when the partner archives it after giving it.
 3. **Every outbound URL fetch goes through `lib/ssrf.ts`** — scheme allowlist, DNS resolve and reject
    loopback/private/link-local/metadata, re-check each redirect hop, 8s timeout, 2MB body cap. This is
-   the app's only real attack surface; do not bypass it "just for the parser".
+   the app's only real attack surface; do not bypass it "just for the parser". The ZenRows
+   fallback (`lib/zenrows.ts`) calls `validateUrl` from the same file before anything leaves the box.
 4. **No signup route.** A `/login` page and `requireUser()` in every page, nothing else. The layout
    reads the theme cookie, never the user row.
 5. **Secret items stay secret.** `secret` is filtered in `getList`, hidden in `toView`, refused in
