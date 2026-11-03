@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { boughtAction, claimAction, givenAction, unclaimAction } from "@/app/actions/claims";
+import { boughtAction, claimAction, givenAction, unboughtAction, unclaimAction } from "@/app/actions/claims";
 import { hostOf, money, shortDate } from "@/lib/format";
 import type { ItemView } from "@/lib/items";
 import { priorityIcon, priorityLabel } from "@/lib/priority";
@@ -142,6 +142,13 @@ export function ItemCard({
               <Icon name="checkCircle" className="h-4 w-4" />
               Marked as Purchased 🎉
             </div>
+
+            <form action={unboughtAction} className="text-center">
+              <input type="hidden" name="itemId" value={item.id} />
+              <button type="submit" className="text-label-sm text-on-surface-variant underline decoration-outline-variant underline-offset-4">
+                Undo — not purchased
+              </button>
+            </form>
 
             <form action={givenAction}>
               <input type="hidden" name="itemId" value={item.id} />

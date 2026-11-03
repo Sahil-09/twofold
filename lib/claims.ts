@@ -45,6 +45,17 @@ export async function markBought(viewerId: string, itemId: string): Promise<void
 }
 
 /** After giving the gift the partner archives it, which is the first thing the owner sees. */
+export async function unmarkBought(viewerId: string, itemId: string): Promise<void> {
+  await partnerItem(viewerId, itemId);
+  await db()
+    .collection<ClaimDoc>("claims")
+    .updateOne(
+      { itemId, claimantId: viewerId, archivedAt: { $exists: false } },
+      { $unset: { boughtAt: "" } },
+    );
+}
+
+/** After giving the gift the partner archives it, which is the first thing the owner sees. */
 export async function markGiven(viewerId: string, itemId: string): Promise<void> {
   const item = await partnerItem(viewerId, itemId);
   const now = new Date();

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
-import { claimItem, markBought, markGiven, unclaimItem } from "@/lib/claims";
+import { claimItem, markBought, markGiven, unclaimItem, unmarkBought } from "@/lib/claims";
 
 const itemId = (formData: FormData) => String(formData.get("itemId") ?? "");
 
@@ -21,6 +21,12 @@ export async function unclaimAction(formData: FormData): Promise<void> {
 export async function boughtAction(formData: FormData): Promise<void> {
   const user = await requireUser();
   await markBought(user.id, itemId(formData));
+  revalidatePath("/");
+}
+
+export async function unboughtAction(formData: FormData): Promise<void> {
+  const user = await requireUser();
+  await unmarkBought(user.id, itemId(formData));
   revalidatePath("/");
 }
 
