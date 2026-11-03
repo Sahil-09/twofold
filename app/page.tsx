@@ -44,7 +44,9 @@ export default async function HomePage({
   const partnerReveals = theirs && partner?.surpriseMode === false;
   const [list, hasNew] = await Promise.all([
     getList(user.id, theirs && partner ? partner.id : user.id, !theirs && user.surpriseMode === false),
-    partner && user.notifyPartnerUpdates ? partnerHasNew(partner.id, user.partnerSeenAt) : false,
+    partner && !theirs && user.notifyPartnerUpdates
+      ? partnerHasNew(partner.id, user.partnerSeenAt)
+      : false,
   ]);
   const owner = theirs && partner ? partner.displayName : user.displayName;
   const firstCurrency = list.items.find((item) => item.price)?.price?.currency;
