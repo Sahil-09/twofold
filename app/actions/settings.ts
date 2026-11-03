@@ -68,8 +68,8 @@ export async function markPartnerSeenAction(): Promise<void> {
   await db()
     .collection<UserDoc>("users")
     .updateOne({ _id: user.id }, { $set: { partnerSeenAt: new Date() } });
-  // No revalidate: the dot is recomputed on the next navigation, and a refresh here re-fired the
-  // caller on every render.
+  // Only the tab bar's dot depends on this; the settings page re-renders on its next visit anyway.
+  revalidatePath("/");
 }
 
 const SubscriptionInput = z.object({
