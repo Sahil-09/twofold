@@ -20,6 +20,7 @@ export type ItemView = {
    * By default it never reaches the owner.
    */
   claim?: { claimedAt: string; boughtAt?: string; bought: boolean };
+  archivedAt?: string;
 };
 
 export type ListView = {
@@ -43,6 +44,7 @@ export const toView = (
     quantity: item.quantity,
     occasion: item.occasion,
     targetPrice: item.targetPrice,
+    archivedAt: item.archivedAt?.toISOString() ?? (item.status === "archived" ? item.updatedAt.toISOString() : undefined),
     createdAt: item.createdAt.toISOString(),
   };
 

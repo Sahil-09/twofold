@@ -23,10 +23,12 @@ export function ItemCard({
   item,
   mine,
   partnerName,
+  settled,
 }: {
   item: ItemView;
   mine: boolean;
   partnerName?: string;
+  settled?: boolean;
 }) {
   const host = hostOf(item.url);
   const tone = TONE[item.priority] ?? TONE.nice;
@@ -129,60 +131,68 @@ export function ItemCard({
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-label-md font-bold leading-tight text-on-primary-fixed">
-                  Purchased by you on {shortDate(item.claim.boughtAt ?? item.claim.claimedAt)}
+                  {settled ? `Given to ${partnerName ?? "them"}` : `Purchased by you on ${shortDate(item.claim.boughtAt ?? item.claim.claimedAt)}`}
                 </p>
                 <p className="mt-0.5 text-label-sm text-on-primary-fixed-variant">
-                  Hidden from {partnerName ?? "them"}. Packaged &amp; ready to surprise! 🎉
+                  {settled ? `Gift delivered and archived · ${shortDate(item.archivedAt)}` : `Hidden from ${partnerName ?? "them"}. Packaged &amp; ready to surprise! 🎉`}
                 </p>
               </div>
               <Icon name="receipt" className="h-4 w-4 shrink-0 text-primary" />
             </div>
 
-            <div className="flex items-center justify-center gap-2 rounded-full bg-primary py-3 text-label-lg font-bold text-on-primary">
-              <Icon name="checkCircle" className="h-4 w-4" />
-              Marked as Purchased 🎉
-            </div>
+            {!settled ? (
+              <>
+                <div className="flex items-center justify-center gap-2 rounded-full bg-primary py-3 text-label-lg font-bold text-on-primary">
+                  <Icon name="checkCircle" className="h-4 w-4" />
+                  Marked as Purchased 🎉
+                </div>
 
-            <form action={unboughtAction} className="text-center">
-              <input type="hidden" name="itemId" value={item.id} />
-              <button type="submit" className="text-label-sm text-on-surface-variant underline decoration-outline-variant underline-offset-4">
-                Undo — not purchased
-              </button>
-            </form>
+                <form action={unboughtAction} className="text-center">
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <button type="submit" className="text-label-sm text-on-surface-variant underline decoration-outline-variant underline-offset-4">
+                    Undo — not purchased
+                  </button>
+                </form>
 
-            <form action={givenAction}>
-              <input type="hidden" name="itemId" value={item.id} />
-              <button type="submit" className="btn-soft h-11 w-full text-label-md">
-                Given — archive it
-              </button>
-            </form>
+                <form action={givenAction}>
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <button type="submit" className="btn-soft h-11 w-full text-label-md">
+                    Given — archive it
+                  </button>
+                </form>
+              </>
+            ) : null}
           </>
         ) : item.claim ? (
           <>
             <div className="rounded-2xl bg-surface-low p-3">
-              <p className="text-label-md font-semibold text-on-surface">Reserved by you</p>
+              <p className="text-label-md font-semibold text-on-surface">{settled ? "Given and archived" : "Reserved by you"}</p>
               <p className="text-label-sm text-on-surface-variant">
-                Hidden from {partnerName ?? "them"}. Release it if plans change.
+                {settled ? (item.archivedAt ? `Gift delivered · ${shortDate(item.archivedAt)}` : "Gift delivered. This wish is fulfilled.") : `Hidden from ${partnerName ?? "them"}. Release it if plans change.`}
               </p>
             </div>
 
-            <form action={boughtAction}>
-              <input type="hidden" name="itemId" value={item.id} />
-              <button type="submit" className="btn-primary w-full">
-                <Icon name="checkCircle" className="h-4 w-4" />
-                Mark as purchased 🎉
-              </button>
-            </form>
+            {!settled ? (
+              <>
+                <form action={boughtAction}>
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <button type="submit" className="btn-primary w-full">
+                    <Icon name="checkCircle" className="h-4 w-4" />
+                    Mark as purchased 🎉
+                  </button>
+                </form>
 
-            <form action={unclaimAction} className="text-center">
-              <input type="hidden" name="itemId" value={item.id} />
-              <button
-                type="submit"
-                className="text-label-sm text-on-surface-variant underline decoration-outline-variant underline-offset-4"
-              >
-                Release
-              </button>
-            </form>
+                <form action={unclaimAction} className="text-center">
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <button
+                    type="submit"
+                    className="text-label-sm text-on-surface-variant underline decoration-outline-variant underline-offset-4"
+                  >
+                    Release
+                  </button>
+                </form>
+              </>
+            ) : null}
           </>
         ) : (
           <form action={claimAction}>
@@ -257,7 +267,12 @@ export function ItemCard({
       <div className="flex items-center justify-between pt-1">
         <div className="flex min-w-0 items-center gap-2">
           <span className="chip bg-surface-low text-on-surface-variant">
-            {hitTarget ? (
+            {item.archivedAt ? (
+              <>
+                <Icon name="checkCircle" className="h-3.5 w-3.5 text-primary" />
+                <span className="text-primary">Received on {shortDate(item.archivedAt)}</span>
+              </>
+            ) : hitTarget ? (
               <>
                 <Icon name="checkCircle" className="h-3.5 w-3.5 text-primary" />
                 <span className="text-primary">Target hit</span>

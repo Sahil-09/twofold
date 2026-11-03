@@ -64,5 +64,5 @@ export async function markGiven(viewerId: string, itemId: string): Promise<void>
     .updateOne({ itemId, claimantId: viewerId }, { $set: { archivedAt: now } });
   await db()
     .collection<ItemDoc>("items")
-    .updateOne({ _id: item._id }, { $set: { status: "archived", updatedAt: now } });
+    .updateOne({ _id: item._id }, { $set: { status: "archived", updatedAt: now, archivedAt: now } });
 }

@@ -41,6 +41,7 @@ export type ItemDoc = {
   /** Hidden from the partner and never announced. */
   secret?: boolean;
   alertedAt?: Date;
+  archivedAt?: Date;
   status: "wanted" | "archived";
   createdAt: Date;
   updatedAt: Date;

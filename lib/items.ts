@@ -149,11 +149,12 @@ export async function updateItem(ownerId: string, itemId: string, input: ItemInp
 }
 
 export async function archiveItem(ownerId: string, itemId: string): Promise<void> {
+  const now = new Date();
   await db()
     .collection<ItemDoc>("items")
     .updateOne(
       { _id: itemId, ownerId },
-      { $set: { status: "archived", updatedAt: new Date() } },
+      { $set: { status: "archived", updatedAt: now, archivedAt: now } },
     );
   await db()
     .collection<ClaimDoc>("claims")
