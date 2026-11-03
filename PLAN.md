@@ -21,7 +21,7 @@ Stack: Next.js (App Router) + MongoDB Atlas (native driver) + Vercel. Installabl
 | Occasion | Free text plus optional date. A label, not an entity. |
 | Secret items | Per-item vault flag: hidden from the partner, unclaimable, never announced. |
 | Partner activity | In-app bell + `/activity` page, written only by item mutations; claims never write one. |
-| UI | Mine / Theirs tabs, Activity, Settings. One mobile-first shell. |
+| UI | Mine / Theirs tabs, Activity, Fulfilled, Settings. One mobile-first shell. |
 
 ## Data model (Mongo)
 
@@ -122,6 +122,7 @@ app/loading.tsx          skeleton painted the moment a tab is tapped
 app/login/page.tsx       credentials form
 app/page.tsx             Mine / Theirs tabs
 app/activity/page.tsx    partner activity feed
+app/fulfilled/page.tsx   archived items + given gifts
 app/settings/page.tsx    profile, appearance, real switches
 app/actions/items.ts     create, update, delete, archive
 app/actions/claims.ts    claim, mark bought, give

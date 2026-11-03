@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { CurrentUser } from "@/lib/auth";
 import { initials } from "@/lib/format";
-import { Icon } from "./icons";
+import { Icon, FulfilledIcon } from "./icons";
 
 /** Fixed twin header. The unread count is fetched by the page so it can run alongside the list. */
 export function Header({ user, section, unread }: { user: CurrentUser; section: string; unread: number }) {
@@ -17,6 +17,14 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
         </Link>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/fulfilled"
+            aria-label="Fulfilled wishes"
+            className="relative grid h-9 w-9 place-items-center rounded-full bg-surface-low text-on-surface-variant transition-colors hover:text-primary"
+          >
+            <FulfilledIcon className="h-[18px] w-[18px]" />
+          </Link>
+
           <Link
             href="/activity"
             aria-label={unread > 0 ? `Activity, ${unread} unread` : "Activity"}

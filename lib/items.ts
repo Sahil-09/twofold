@@ -63,6 +63,42 @@ export async function getList(
   };
 }
 
+/** Fulfilled wishes: your archived items + the partner's items you gifted. */
+export async function getFulfilled(viewerId: string, partnerId: string | null) {
+  const own = await db()
+    .collection<ItemDoc>("items")
+    .find({ ownerId: viewerId, status: "archived" })
+    .sort({ updatedAt: -1 })
+    .toArray();
+  const givenIds = partnerId
+    ? (await db()
+        .collection<ClaimDoc>("claims")
+        .find({ claimantId: viewerId, archivedAt: { $exists: true } })
+        .toArray()).map((c) => c.itemId)
+    : [];
+  const claimsByItem = new Map(
+    (await db()
+      .collection<ClaimDoc>("claims")
+      .find({ itemId: { $in: givenIds } })
+      .toArray())
+      .map((c) => [c.itemId, c]),
+  );
+  const given = givenIds.length
+    ? await db()
+        .collection<ItemDoc>("items")
+        .find({ _id: { $in: givenIds }, ownerId: partnerId! })
+        .sort({ updatedAt: -1 })
+        .toArray()
+    : [];
+  return {
+    own: own.map((i) => ownerView(i)),
+    given: given.map((i) => {
+      const claim = claimsByItem.get(i._id);
+      return toView(i, claim ? { claimedAt: claim.claimedAt, boughtAt: claim.boughtAt } : undefined);
+    }),
+  };
+}
+
 /** True when the partner has a wanted, non-secret item newer than the last time this user looked. */
 export async function partnerHasNew(partnerId: string, seenAt?: Date): Promise<boolean> {
   const count = await db()

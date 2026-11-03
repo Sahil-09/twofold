@@ -52,6 +52,26 @@ export function Icon({ name, className = "h-5 w-5" }: { name: IconName; classNam
   );
 }
 
+/** Icons8 "Gift" (Material Outlined, id 85026) masked to follow currentColor like the strokes. */
+export function FulfilledIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <span
+      className={`inline-block shrink-0 bg-[currentColor] ${className}`}
+      style={{
+        maskImage: "url(/icons/gift.png)",
+        WebkitMaskImage: "url(/icons/gift.png)",
+        maskSize: "contain",
+        WebkitMaskSize: "contain",
+        maskRepeat: "no-repeat",
+        WebkitMaskRepeat: "no-repeat",
+        maskPosition: "center",
+        WebkitMaskPosition: "center",
+      }}
+      aria-hidden
+    />
+  );
+}
+
 /** The small pulsing dot the Stitch screens use for "paired" and "live". */
 export function Pulse({ className = "bg-primary" }: { className?: string }) {
   return (
