@@ -27,15 +27,17 @@ export async function createItemAction(input: unknown): Promise<SaveResult> {
   return { ok: true, id };
 }
 
-export async function updateItemAction(itemId: string, formData: FormData): Promise<void> {
+export async function updateItemAction(itemId: unknown, formData: FormData): Promise<void> {
   const user = await requireUser();
+  if (typeof itemId !== "string" || !itemId.trim()) return;
+  const id = itemId.trim();
   const parsed = ItemInput.safeParse(formToInput(formData));
   if (!parsed.success) {
-    redirect(`/item/${itemId}?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Check the fields.")}`);
+    redirect(`/item/${id}?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Check the fields.")}`);
   }
-  await updateItem(user.id, itemId, parsed.data);
+  await updateItem(user.id, id, parsed.data);
   await recordActivity(user, "updated", {
-    _id: itemId,
+    _id: id,
     title: parsed.data.title,
     secret: parsed.data.secret,
   });
@@ -43,19 +45,23 @@ export async function updateItemAction(itemId: string, formData: FormData): Prom
   redirect("/");
 }
 
-export async function deleteItemAction(itemId: string): Promise<void> {
+export async function deleteItemAction(itemId: unknown): Promise<void> {
   const user = await requireUser();
-  await deleteItem(user.id, itemId);
+  if (typeof itemId !== "string" || !itemId.trim()) return;
+  const id = itemId.trim();
+  await deleteItem(user.id, id);
   revalidatePath("/");
   redirect("/");
 }
 
-export async function archiveItemAction(itemId: string): Promise<void> {
+export async function archiveItemAction(itemId: unknown): Promise<void> {
   const user = await requireUser();
-  const item = await getItem(user.id, itemId);
-  await archiveItem(user.id, itemId);
+  if (typeof itemId !== "string" || !itemId.trim()) return;
+  const id = itemId.trim();
+  const item = await getItem(user.id, id);
+  await archiveItem(user.id, id);
   if (item) {
-    await recordActivity(user, "archived", { _id: itemId, title: item.title, secret: item.secret });
+    await recordActivity(user, "archived", { _id: id, title: item.title, secret: item.secret });
   }
   revalidatePath("/");
 }

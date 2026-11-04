@@ -13,6 +13,13 @@ const optionalText = (max: number) =>
   z.preprocess(blank, z.string().trim().max(max).optional());
 
 const optionalUrl = z.preprocess(blank, z.string().trim().url().max(2000).optional());
+const optionalWebUrl = z.preprocess(
+  blank,
+  z.string().trim().url().max(2000).optional().refine(
+    (v) => v === undefined || /^https?:\/\//i.test(v),
+    { message: "Only http and https links work." },
+  ),
+);
 
 const optionalMoney = z.preprocess(
   (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
@@ -21,8 +28,8 @@ const optionalMoney = z.preprocess(
 
 export const ItemInput = z.object({
   title: z.string().trim().min(1, "A title is required").max(200),
-  url: optionalUrl,
-  imageUrl: optionalUrl,
+  url: optionalWebUrl,
+  imageUrl: optionalWebUrl,
   note: optionalText(2000),
   priority: z.enum(["everyday", "toppick", "nice", "worth", "dream"]).default("everyday"),
   quantity: z.preprocess(
