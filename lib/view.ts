@@ -25,8 +25,8 @@ export type ItemView = {
 
 export type ListView = {
   items: ItemView[];
-  /** Opaque, order-shuffled tokens. One per claim; carries no id, title, price or image. Owner view only. */
-  reservations: string[];
+  /** Opaque, order-shuffled tokens. One per claim; carries no id, title, price or image. The bought flag tracks whether the anonymous claim has moved to purchased. Owner view only. */
+  reservations: { token: string; bought: boolean }[];
 };
 
 export const toView = (

@@ -34,8 +34,8 @@ A local MongoDB service is usually running on `127.0.0.1:27017`; `.env.local` po
 
 1. **Claim data never reaches the item owner by default.** `lib/view.ts` holds the only item
    serializer (`ownerView` / `toView`); no page assembles items by hand. With Surprise Mode on (the
-   default) the owner's list carries `reservations: string[]` of opaque tokens only — no item id,
-   title, price, image, or count-per-item. The one exception is `users.surpriseMode === false`, where
+   default) the owner's list carries `reservations: { token, bought }[]` of opaque tokens only — no
+   item id, title, price, image, or count-per-item, plus an anonymous bought flag. The one exception is `users.surpriseMode === false`, where
    `getList` passes the owner's own claim (no claimant id) and the tokens disappear. Never invert that
    default.
 2. **Owner-visible status never flips on purchase.** `bought_at` lives on the claim and stays hidden.

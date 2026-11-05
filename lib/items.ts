@@ -46,7 +46,7 @@ export async function getList(
     if (!revealClaims) {
       return {
         items: items.map((item) => ownerView(item)),
-        reservations: claims.map(() => randomUUID()),
+        reservations: claims.map((claim) => ({ token: randomUUID(), bought: Boolean(claim.boughtAt) })),
       };
     }
 

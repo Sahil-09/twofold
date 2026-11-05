@@ -1,6 +1,6 @@
 import { Icon } from "./icons";
 
-export function Reservations({ tokens }: { tokens: string[] }) {
+export function Reservations({ tokens }: { tokens: { token: string; bought: boolean }[] }) {
   return (
     <section
       className="rounded-3xl bg-surface-container/80 p-4 shadow-rest"
@@ -22,12 +22,12 @@ export function Reservations({ tokens }: { tokens: string[] }) {
 
       {tokens.length > 0 ? (
         <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1">
-          {tokens.map((token) => (
+          {tokens.map((entry) => (
             <div
-              key={token}
+              key={entry.token}
               className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl bg-surface-low"
               role="img"
-              aria-label="Something reserved"
+              aria-label={entry.bought ? "Something purchased" : "Something reserved"}
             >
               <div className="h-12 bg-surface-high" />
               <div className="space-y-1.5 p-2.5">
@@ -36,7 +36,7 @@ export function Reservations({ tokens }: { tokens: string[] }) {
               </div>
               <div className="absolute inset-0 grid place-items-center bg-surface/30 backdrop-blur-[3px]">
                 <span className="text-label-sm font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
-                  Reserved
+                  {entry.bought ? "Purchased" : "Reserved"}
                 </span>
               </div>
             </div>
