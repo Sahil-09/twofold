@@ -1,5 +1,6 @@
 ﻿import { randomUUID } from "node:crypto";
 import { db } from "./db";
+import { getOwnerListRaw, invalidateOwnerList } from "./item-cache";
 import type { ClaimDoc, ItemDoc, UserDoc } from "./types";
 import type { ItemInput } from "./schema";
 import { priorityRank } from "./priority";
@@ -16,17 +17,12 @@ export async function getList(
   ownerId: string,
   revealClaims = false,
 ): Promise<ListView> {
-  const wanted = await db()
-    .collection<ItemDoc>("items")
-    .find({ ownerId, status: "wanted" })
-    .toArray();
+  const raw = await getOwnerListRaw(ownerId);
+  const wanted = raw.items.filter((item) => !item.deletedAt);
 
   if (wanted.length === 0) return { items: [], reservations: [] };
 
-  const claims = await db()
-    .collection<ClaimDoc>("claims")
-    .find({ itemId: { $in: wanted.map((i) => i._id) } })
-    .toArray();
+  const claims = raw.claims.filter((c) => !c.deletedAt && wanted.some((i) => i._id === c.itemId));
 
   const mine = new Map(claims.filter((c) => c.claimantId === viewerId).map((c) => [c.itemId, c]));
 
@@ -67,26 +63,26 @@ export async function getList(
 export async function getFulfilled(viewerId: string, partnerId: string | null) {
   const own = await db()
     .collection<ItemDoc>("items")
-    .find({ ownerId: viewerId, status: "archived" })
+    .find({ ownerId: viewerId, status: "archived", deletedAt: { $exists: false } })
     .sort({ updatedAt: -1 })
     .toArray();
   const givenIds = partnerId
     ? (await db()
         .collection<ClaimDoc>("claims")
-        .find({ claimantId: viewerId, archivedAt: { $exists: true } })
+        .find({ claimantId: viewerId, archivedAt: { $exists: true }, deletedAt: { $exists: false } })
         .toArray()).map((c) => c.itemId)
     : [];
   const claimsByItem = new Map(
     (await db()
       .collection<ClaimDoc>("claims")
-      .find({ itemId: { $in: givenIds } })
+      .find({ itemId: { $in: givenIds }, deletedAt: { $exists: false } })
       .toArray())
       .map((c) => [c.itemId, c]),
   );
   const given = givenIds.length
     ? await db()
         .collection<ItemDoc>("items")
-        .find({ _id: { $in: givenIds }, ownerId: partnerId! })
+        .find({ _id: { $in: givenIds }, ownerId: partnerId!, deletedAt: { $exists: false } })
         .sort({ updatedAt: -1 })
         .toArray()
     : [];
@@ -107,6 +103,7 @@ export async function partnerHasNew(partnerId: string, seenAt?: Date): Promise<b
       ownerId: partnerId,
       status: "wanted",
       secret: { $ne: true },
+      deletedAt: { $exists: false },
       createdAt: { $gt: seenAt ?? new Date(0) },
     });
   return count > 0;
@@ -119,7 +116,9 @@ export async function markPartnerSeen(userId: string): Promise<void> {
 }
 
 export async function getItem(ownerId: string, itemId: string): Promise<ItemDoc | null> {
-  return db().collection<ItemDoc>("items").findOne({ _id: itemId, ownerId });
+  return db()
+    .collection<ItemDoc>("items")
+    .findOne({ _id: itemId, ownerId, deletedAt: { $exists: false } });
 }
 
 export async function createItem(ownerId: string, input: ItemInput): Promise<string> {
@@ -133,6 +132,7 @@ export async function createItem(ownerId: string, input: ItemInput): Promise<str
     createdAt: now,
     updatedAt: now,
   });
+  await invalidateOwnerList(ownerId);
   return id;
 }
 
@@ -145,7 +145,10 @@ export async function updateItem(ownerId: string, itemId: string, input: ItemInp
     else set[key] = value;
   }
   const update = Object.keys(unset).length ? { $set: set, $unset: unset } : { $set: set };
-  await db().collection<ItemDoc>("items").updateOne({ _id: itemId, ownerId }, update);
+  await db()
+    .collection<ItemDoc>("items")
+    .updateOne({ _id: itemId, ownerId, deletedAt: { $exists: false } }, update);
+  await invalidateOwnerList(ownerId);
 }
 
 export async function archiveItem(ownerId: string, itemId: string): Promise<void> {
@@ -153,20 +156,34 @@ export async function archiveItem(ownerId: string, itemId: string): Promise<void
   await db()
     .collection<ItemDoc>("items")
     .updateOne(
-      { _id: itemId, ownerId },
+      { _id: itemId, ownerId, deletedAt: { $exists: false } },
       { $set: { status: "archived", updatedAt: now, archivedAt: now } },
     );
   await db()
     .collection<ClaimDoc>("claims")
-    .updateOne({ itemId }, { $set: { archivedAt: new Date() } });
+    .updateMany({ itemId, deletedAt: { $exists: false } }, { $set: { archivedAt: new Date() } });
+  await invalidateOwnerList(ownerId);
 }
 
 export async function deleteItem(ownerId: string, itemId: string): Promise<void> {
-  await db().collection<ItemDoc>("items").deleteOne({ _id: itemId, ownerId });
-  await db().collection<ClaimDoc>("claims").deleteMany({ itemId });
-  await db().collection("priceChecks").deleteMany({ itemId });
-  // A deleted wish leaves no trace in the partner's feed either.
-  await db().collection("activity").deleteMany({ itemId });
+  const now = new Date();
+  await db()
+    .collection<ItemDoc>("items")
+    .updateOne(
+      { _id: itemId, ownerId, deletedAt: { $exists: false } },
+      { $set: { deletedAt: now, updatedAt: now } },
+    );
+  // Soft-delete everything tied to the wish; never remove documents.
+  await db()
+    .collection<ClaimDoc>("claims")
+    .updateMany({ itemId, deletedAt: { $exists: false } }, { $set: { deletedAt: now } });
+  await db()
+    .collection("priceChecks")
+    .updateMany({ itemId, deletedAt: { $exists: false } }, { $set: { deletedAt: now } });
+  await db()
+    .collection("activity")
+    .updateMany({ itemId, deletedAt: { $exists: false } }, { $set: { deletedAt: now } });
+  await invalidateOwnerList(ownerId);
 }
 
 function mapInput(input: ItemInput): Omit<ItemDoc, "_id" | "ownerId" | "status" | "createdAt" | "updatedAt"> {

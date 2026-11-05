@@ -53,10 +53,14 @@ export async function destroySession(): Promise<void> {
       try {
         await client.del(`${SESSION_PREFIX}${hash}`);
       } catch {
-        await db().collection<SessionDoc>("sessions").deleteOne({ _id: hash });
+        await db()
+        .collection<SessionDoc>("sessions")
+        .updateOne({ _id: hash }, { $set: { deletedAt: new Date() } });
       }
     } else {
-      await db().collection<SessionDoc>("sessions").deleteOne({ _id: hash });
+      await db()
+        .collection<SessionDoc>("sessions")
+        .updateOne({ _id: hash }, { $set: { deletedAt: new Date() } });
     }
   }
   jar.delete(COOKIE);
@@ -83,7 +87,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if ((client === null || redisFailed) && userId === null) {
     const session = await db()
       .collection<SessionDoc>("sessions")
-      .findOne({ _id: hash, expiresAt: { $gt: new Date() } });
+      .findOne({ _id: hash, expiresAt: { $gt: new Date() }, deletedAt: { $exists: false } });
     userId = session?.userId ?? null;
   } else if (client && !redisFailed && userId === null) {
     // Redis said "no such session"; do not fall back to Mongo (it was the source of truth

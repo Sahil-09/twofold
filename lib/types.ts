@@ -24,6 +24,7 @@ export type SessionDoc = {
   _id: string; // sha256 of the cookie token, so the DB never holds a usable token
   userId: string;
   expiresAt: Date;
+  deletedAt?: Date;
 };
 
 export type ItemDoc = {
@@ -42,6 +43,8 @@ export type ItemDoc = {
   secret?: boolean;
   alertedAt?: Date;
   archivedAt?: Date;
+  /** Soft-delete marker. Never remove documents; filter this out on read. */
+  deletedAt?: Date;
   status: "wanted" | "archived";
   createdAt: Date;
   updatedAt: Date;
@@ -54,6 +57,7 @@ export type ClaimDoc = {
   claimedAt: Date;
   boughtAt?: Date;
   archivedAt?: Date;
+  deletedAt?: Date;
 };
 
 /** Written only for owner-side edits; a claim never produces one. */
@@ -66,6 +70,7 @@ export type ActivityDoc = {
   title: string;
   at: Date;
   readAt?: Date;
+  deletedAt?: Date;
 };
 
 export type PushSubDoc = {
@@ -74,6 +79,7 @@ export type PushSubDoc = {
   endpoint: string;
   keys: { p256dh: string; auth: string };
   createdAt: Date;
+  deletedAt?: Date;
 };
 
 export type PriceCheckDoc = {
@@ -83,4 +89,5 @@ export type PriceCheckDoc = {
   price?: number;
   ok: boolean;
   error?: string;
+  deletedAt?: Date;
 };

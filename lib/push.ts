@@ -30,7 +30,10 @@ export type PushPayload = { title: string; body: string; url?: string };
 export async function sendPush(userId: string, payload: PushPayload): Promise<void> {
   if (!configure()) return;
 
-  const subs = await db().collection<PushSubDoc>("pushSubs").find({ userId }).toArray();
+  const subs = await db()
+    .collection<PushSubDoc>("pushSubs")
+    .find({ userId, deletedAt: { $exists: false } })
+    .toArray();
   await Promise.all(
     subs.map(async (sub) => {
       try {
@@ -42,7 +45,7 @@ export async function sendPush(userId: string, payload: PushPayload): Promise<vo
         const status = (error as { statusCode?: number }).statusCode;
         // 404/410 mean the browser dropped the subscription.
         if (status === 404 || status === 410) {
-          await db().collection<PushSubDoc>("pushSubs").deleteOne({ _id: sub._id });
+          await db().collection<PushSubDoc>("pushSubs").updateOne({ _id: sub._id }, { $set: { deletedAt: new Date() } });
         }
       }
     }),

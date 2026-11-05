@@ -46,7 +46,7 @@ export async function recordActivity(
 export async function activityFor(userId: string): Promise<ActivityDoc[]> {
   return db()
     .collection<ActivityDoc>("activity")
-    .find({ recipientId: userId })
+    .find({ recipientId: userId, deletedAt: { $exists: false } })
     .sort({ at: -1 })
     .limit(50)
     .toArray();
@@ -55,14 +55,14 @@ export async function activityFor(userId: string): Promise<ActivityDoc[]> {
 export async function unreadActivityCount(userId: string): Promise<number> {
   return db()
     .collection<ActivityDoc>("activity")
-    .countDocuments({ recipientId: userId, readAt: { $exists: false } });
+    .countDocuments({ recipientId: userId, readAt: { $exists: false }, deletedAt: { $exists: false } });
 }
 
 export async function markActivityRead(userId: string): Promise<void> {
   await db()
     .collection<ActivityDoc>("activity")
     .updateMany(
-      { recipientId: userId, readAt: { $exists: false } },
+      { recipientId: userId, readAt: { $exists: false }, deletedAt: { $exists: false } },
       { $set: { readAt: new Date() } },
     );
 }

@@ -33,7 +33,12 @@ export async function GET(request: Request) {
   const budget = { headless: HEADLESS_PER_RUN, zenrows: ZENROWS_PER_RUN };
   const items = await db()
     .collection<ItemDoc>("items")
-    .find({ status: "wanted", url: { $exists: true }, targetPrice: { $exists: true } })
+    .find({
+      status: "wanted",
+      url: { $exists: true },
+      targetPrice: { $exists: true },
+      deletedAt: { $exists: false },
+    })
     .limit(PER_RUN)
     .toArray();
 

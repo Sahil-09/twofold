@@ -101,6 +101,8 @@ export async function subscribeAction(input: unknown): Promise<{ ok: boolean }> 
 
 export async function unsubscribeAction(endpoint: string): Promise<void> {
   const user = await requireUser();
-  await db().collection<PushSubDoc>("pushSubs").deleteMany({ userId: user.id, endpoint });
+  await db()
+    .collection<PushSubDoc>("pushSubs")
+    .updateMany({ userId: user.id, endpoint, deletedAt: { $exists: false } }, { $set: { deletedAt: new Date() } });
   revalidatePath("/settings");
 }
