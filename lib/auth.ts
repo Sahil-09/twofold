@@ -3,30 +3,37 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db } from "./db";
+import { redis } from "./redis";
+import { getUserById, invalidateUser } from "./user-cache";
+import type { CurrentUser } from "./user-cache";
 import type { SessionDoc, Theme, UserDoc } from "./types";
 
+export type { CurrentUser } from "./user-cache";
+
 const COOKIE = "twofold_sid";
-const SESSION_TTL = 30 * 24 * 60 * 60 * 1000;
+const SESSION_TTL_SEC = 30 * 24 * 60 * 60;
+const SESSION_PREFIX = "twofold:session:";
 
-export type CurrentUser = {
-  id: string;
-  email: string;
-  displayName: string;
-  theme: Theme;
-  notifyPartnerUpdates: boolean;
-  surpriseMode: boolean;
-  autoParse: boolean;
-  partnerSeenAt?: Date;
-  createdAt: Date;
-};
-
-// scrypt rather than argon2: no native build step, standard library only.
 const sha = (value: string) => createHash("sha256").update(value).digest("hex");
+
+export { invalidateUser };
 
 export async function createSession(userId: string): Promise<void> {
   const token = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(Date.now() + SESSION_TTL);
-  await db().collection<SessionDoc>("sessions").insertOne({ _id: sha(token), userId, expiresAt });
+  const hash = sha(token);
+  const expiresAt = new Date(Date.now() + SESSION_TTL_SEC * 1000);
+
+  const client = redis();
+  if (client) {
+    try {
+      await client.set(`${SESSION_PREFIX}${hash}`, userId, "EX", SESSION_TTL_SEC);
+    } catch {
+      await db().collection<SessionDoc>("sessions").insertOne({ _id: hash, userId, expiresAt });
+    }
+  } else {
+    await db().collection<SessionDoc>("sessions").insertOne({ _id: hash, userId, expiresAt });
+  }
+
   (await cookies()).set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
@@ -39,7 +46,19 @@ export async function createSession(userId: string): Promise<void> {
 export async function destroySession(): Promise<void> {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
-  if (token) await db().collection<SessionDoc>("sessions").deleteOne({ _id: sha(token) });
+  if (token) {
+    const hash = sha(token);
+    const client = redis();
+    if (client) {
+      try {
+        await client.del(`${SESSION_PREFIX}${hash}`);
+      } catch {
+        await db().collection<SessionDoc>("sessions").deleteOne({ _id: hash });
+      }
+    } else {
+      await db().collection<SessionDoc>("sessions").deleteOne({ _id: hash });
+    }
+  }
   jar.delete(COOKIE);
 }
 
@@ -47,26 +66,32 @@ export async function destroySession(): Promise<void> {
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
+  const hash = sha(token);
 
-  const session = await db()
-    .collection<SessionDoc>("sessions")
-    .findOne({ _id: sha(token), expiresAt: { $gt: new Date() } });
-  if (!session) return null;
+  const client = redis();
+  let userId: string | null = null;
+  let redisFailed = false;
 
-  const user = await db().collection<UserDoc>("users").findOne({ _id: session.userId });
-  if (!user) return null;
+  if (client) {
+    try {
+      userId = await client.get(`${SESSION_PREFIX}${hash}`);
+    } catch {
+      redisFailed = true;
+    }
+  }
 
-  return {
-    id: user._id,
-    email: user.email,
-    displayName: user.displayName,
-    theme: user.theme ?? "system",
-    notifyPartnerUpdates: user.notifyPartnerUpdates !== false,
-    surpriseMode: user.surpriseMode !== false,
-    autoParse: user.autoParse !== false,
-    partnerSeenAt: user.partnerSeenAt,
-    createdAt: user.createdAt,
-  };
+  if ((client === null || redisFailed) && userId === null) {
+    const session = await db()
+      .collection<SessionDoc>("sessions")
+      .findOne({ _id: hash, expiresAt: { $gt: new Date() } });
+    userId = session?.userId ?? null;
+  } else if (client && !redisFailed && userId === null) {
+    // Redis said "no such session"; do not fall back to Mongo (it was the source of truth
+    // only when Redis is unavailable). Session is genuinely invalid.
+  }
+
+  if (!userId) return null;
+  return getUserById(userId);
 });
 
 export async function requireUser(): Promise<CurrentUser> {
@@ -77,19 +102,7 @@ export async function requireUser(): Promise<CurrentUser> {
 
 export async function getPartner(userId: string): Promise<CurrentUser | null> {
   // Exactly two accounts by design, so "the other user" is the partner.
-  const user = await db()
-    .collection<UserDoc>("users")
-    .findOne({ _id: { $ne: userId } });
-  if (!user) return null;
-  return {
-    id: user._id,
-    email: user.email,
-    displayName: user.displayName,
-    theme: user.theme ?? "system",
-    notifyPartnerUpdates: user.notifyPartnerUpdates !== false,
-    surpriseMode: user.surpriseMode !== false,
-    autoParse: user.autoParse !== false,
-    partnerSeenAt: user.partnerSeenAt,
-    createdAt: user.createdAt,
-  };
+  const doc = await db().collection<UserDoc>("users").findOne({ _id: { $ne: userId } });
+  if (!doc) return null;
+  return getUserById(doc._id);
 }

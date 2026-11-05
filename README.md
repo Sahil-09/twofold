@@ -34,6 +34,9 @@ npm run build
 Vercel, with `MONGODB_URI`, `MONGODB_DB`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
 `VAPID_SUBJECT` and `CRON_SECRET` set. Generate the push keys with `npx web-push generate-vapid-keys`.
 
+Optional env: `REDIS_URL` enables Redis-backed sessions and user caching; when unset the app falls back
+to Mongo sessions and uncached reads. Local dev: any Redis on `localhost:6379`.
+
 `vercel.json` runs `/api/cron/price` daily at 06:00 UTC; Vercel sends the `CRON_SECRET` as a bearer
 token. On iPhone, push only works after adding the app to the Home Screen.
 

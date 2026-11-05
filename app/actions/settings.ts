@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
+import { requireUser, invalidateUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { rememberTheme } from "@/lib/theme";
 import type { PushSubDoc, Theme, UserDoc } from "@/lib/types";
@@ -18,6 +18,7 @@ export async function saveSettings(formData: FormData): Promise<void> {
   await db()
     .collection<UserDoc>("users")
     .updateOne({ _id: user.id }, { $set: { displayName, theme: chosen } });
+  await invalidateUser(user.id);
   await rememberTheme(chosen);
   revalidatePath("/");
   revalidatePath("/settings");
@@ -27,6 +28,7 @@ export async function setTheme(theme: Theme): Promise<void> {
   const user = await requireUser();
   if (!["light", "dark", "system"].includes(theme)) return;
   await db().collection<UserDoc>("users").updateOne({ _id: user.id }, { $set: { theme } });
+  await invalidateUser(user.id);
   await rememberTheme(theme);
   revalidatePath("/");
   revalidatePath("/settings");
@@ -58,6 +60,7 @@ export async function setSetting(key: unknown, enabled: unknown): Promise<void> 
       { _id: user.id },
       { $set: { [SETTINGS[parsed.data.key]]: parsed.data.enabled } },
     );
+  await invalidateUser(user.id);
   revalidatePath("/");
   revalidatePath("/settings");
 }
@@ -68,6 +71,7 @@ export async function markPartnerSeenAction(): Promise<void> {
   await db()
     .collection<UserDoc>("users")
     .updateOne({ _id: user.id }, { $set: { partnerSeenAt: new Date() } });
+  await invalidateUser(user.id);
   // No revalidate: the dot is recomputed on the next navigation, and a refresh here re-fired the
   // caller on every render.
 }
