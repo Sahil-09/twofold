@@ -16,7 +16,7 @@ export default async function FulfilledPage() {
   return (
     <>
       <Header user={user} section="Fulfilled" unread={0} />
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
+      <main className="page-enter mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-4 pt-2">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-1.5 text-label-md text-on-surface-variant">
@@ -41,7 +41,7 @@ export default async function FulfilledPage() {
               {given.length > 0 ? (
                 <section>
                   <h2 className="text-label-md font-bold text-on-surface-variant uppercase tracking-wider mb-2">Given by you</h2>
-                  <div className="flex flex-col gap-3">
+                  <div className="stagger flex flex-col gap-3">
                     {given.map((item) => (
                       <ItemCard key={item.id} item={item} mine={false} partnerName={partnerName ?? undefined} settled />
                     ))}
@@ -52,7 +52,7 @@ export default async function FulfilledPage() {
               {own.length > 0 ? (
                 <section>
                   <h2 className="text-label-md font-bold text-on-surface-variant uppercase tracking-wider mb-2">Off your list</h2>
-                  <div className="flex flex-col gap-3">
+                  <div className="stagger flex flex-col gap-3">
                     {own.map((item) => (
                       <ItemCard key={item.id} item={item} mine />
                     ))}

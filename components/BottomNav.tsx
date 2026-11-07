@@ -27,7 +27,7 @@ export function BottomNav({
                 key={item.key}
                 href={item.href}
                 aria-current={current ? "page" : undefined}
-                className={`flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded-full px-3 transition-colors ${
+                className={`flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded-full px-3 transition-[transform,color] duration-200 active:scale-90 ${
                   current
                     ? "text-primary"
                     : "text-on-surface-variant hover:text-on-surface"

@@ -9,10 +9,10 @@ export default async function LoginPage() {
   if (await getCurrentUser()) redirect("/");
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-5 py-10">
+    <main className="page-enter flex min-h-dvh items-center justify-center px-5 py-10">
       <div className="w-full max-w-sm">
         <header className="mb-10 flex flex-col items-center text-center">
-          <div className="mb-5 grid h-14 w-14 place-items-center rounded-full bg-primary-fixed text-primary shadow-rest">
+          <div className="animate-pop mb-5 grid h-14 w-14 place-items-center rounded-full bg-primary-fixed text-primary shadow-rest">
             <Icon name="heart" className="h-7 w-7" />
           </div>
           <div className="flex items-center gap-1.5">

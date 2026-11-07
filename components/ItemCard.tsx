@@ -59,7 +59,7 @@ export function ItemCard({
 
   if (!mine) {
     return (
-      <article className="card flex flex-col gap-4 rounded-3xl p-5">
+      <article className="group card flex flex-col gap-4 rounded-3xl p-5 transition duration-300 hover:shadow-float active:scale-[0.995]">
         <div className="flex items-center justify-between gap-3">
           <span className={`chip ${tone.filled}`}>
             <Icon name={priorityIcon(item.priority)} className="h-3.5 w-3.5" />
@@ -77,7 +77,7 @@ export function ItemCard({
               rel="noreferrer noopener"
               className="block h-24 w-24"
             >
-              <Thumb src={item.imageUrl} alt={item.title} className="h-24 w-24" />
+              <Thumb src={item.imageUrl} alt={item.title} className="h-24 w-24 transition-transform duration-500 group-hover:scale-105" />
             </a>
             {item.claim?.bought ? (
               <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-surface-lowest/90 text-primary backdrop-blur-sm">
@@ -125,7 +125,7 @@ export function ItemCard({
 
         {item.claim?.bought ? (
           <>
-            <div className="flex items-start gap-2.5 rounded-2xl bg-primary-fixed/40 p-3">
+            <div className="animate-pop flex items-start gap-2.5 rounded-2xl bg-primary-fixed/40 p-3">
               <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-on-primary">
                 <Icon name="check" className="h-3 w-3" />
               </span>
@@ -165,7 +165,7 @@ export function ItemCard({
           </>
         ) : item.claim ? (
           <>
-            <div className="rounded-2xl bg-surface-low p-3">
+            <div className="animate-pop rounded-2xl bg-surface-low p-3">
               <p className="text-label-md font-semibold text-on-surface">{settled ? "Given and archived" : "Reserved by you"}</p>
               <p className="text-label-sm text-on-surface-variant">
                 {settled ? (item.archivedAt ? `Gift delivered · ${shortDate(item.archivedAt)}` : "Gift delivered. This wish is fulfilled.") : `Hidden from ${partnerName ?? "them"}. Release it if plans change.`}
@@ -208,10 +208,10 @@ export function ItemCard({
   }
 
   return (
-    <article className="card flex flex-col gap-3 rounded-3xl p-5">
+    <article className="group card flex flex-col gap-3 rounded-3xl p-5 transition duration-300 hover:shadow-float active:scale-[0.995]">
       <div className="relative h-48 w-full overflow-hidden rounded-2xl bg-surface-low">
         <Link href={`/item/${item.id}`} className="block h-full w-full">
-          <Thumb src={item.imageUrl} alt={item.title} className="h-48 w-full" />
+          <Thumb src={item.imageUrl} alt={item.title} className="h-48 w-full transition-transform duration-500 group-hover:scale-[1.03]" />
         </Link>
 
         <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-surface-lowest/90 px-2.5 py-1 shadow-sm backdrop-blur-md">
@@ -252,7 +252,7 @@ export function ItemCard({
       </Link>
 
       {item.claim ? (
-        <div className="flex items-center gap-2 rounded-2xl bg-primary-fixed/40 px-3 py-2">
+        <div className="animate-pop flex items-center gap-2 rounded-2xl bg-primary-fixed/40 px-3 py-2">
           <Icon
             name={item.claim.bought ? "checkCircle" : "gift"}
             className="h-4 w-4 shrink-0 text-primary"

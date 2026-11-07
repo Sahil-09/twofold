@@ -32,7 +32,7 @@ export default async function ItemPage({
     <>
       <Header user={user} section="Edit wish" unread={unread} />
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
+      <main className="page-enter mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-4 pt-2">
           <Link href="/" className="flex items-center gap-1.5 text-label-md text-on-surface-variant">
             ← Back to my list

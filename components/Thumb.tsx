@@ -31,7 +31,7 @@ export function Thumb({
       referrerPolicy="no-referrer"
       loading="lazy"
       onError={() => setBroken(true)}
-      className={`bg-surface-low object-cover ${className}`}
+      className={`animate-fade bg-surface-low object-cover ${className}`}
     />
   );
 }

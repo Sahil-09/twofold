@@ -151,9 +151,9 @@ export function AddWish({
           role="dialog"
           aria-modal="true"
           aria-label="New wish"
-          className="fixed inset-0 z-[60] overflow-y-auto bg-surface"
+          className="animate-fade fixed inset-0 z-[60] overflow-y-auto bg-surface"
         >
-          <div className="mx-auto flex w-full max-w-xl flex-col px-4 pb-28 pt-safe">
+          <div className="animate-sheet mx-auto flex w-full max-w-xl flex-col px-4 pb-28 pt-safe">
             <div className="flex flex-col items-center pt-3">
               <div className="mb-3 h-1.5 w-12 rounded-full bg-surface-high" />
               <div className="flex w-full items-start justify-between gap-3">
@@ -177,7 +177,7 @@ export function AddWish({
                 <button
                   type="button"
                   onClick={reset}
-                  className="shrink-0 rounded-full bg-surface-container px-4 py-2 text-label-md text-on-surface-variant active:scale-95"
+                  className="shrink-0 rounded-full bg-surface-container px-4 py-2 text-label-md text-on-surface-variant transition-transform active:scale-95"
                 >
                   Cancel
                 </button>

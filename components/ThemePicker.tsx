@@ -42,7 +42,7 @@ export function ThemePicker({ value }: { value: Theme }) {
             onClick={() => choose(option.key)}
             aria-pressed={active}
             disabled={pending}
-            className={`flex items-center justify-center gap-2 rounded-full py-2 text-label-md font-semibold transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-full py-2 text-label-md font-semibold transition-all active:scale-95 ${
               active
                 ? "bg-surface-lowest text-primary shadow-sm"
                 : "text-on-surface-variant hover:text-on-surface"

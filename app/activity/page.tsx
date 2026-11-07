@@ -28,7 +28,7 @@ export default async function ActivityPage() {
     <>
       <Header user={user} section="Activity" unread={unread} />
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
+      <main className="page-enter mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-4 pt-2">
           <OnMount action={markActivityReadAction} />
 
@@ -60,7 +60,7 @@ export default async function ActivityPage() {
               </p>
             </div>
           ) : (
-            <div className="card flex flex-col divide-y divide-surface-container p-1">
+            <div className="stagger card flex flex-col divide-y divide-surface-container p-1">
               {events.map((event) => {
                 const copy = COPY[event.kind] ?? COPY.updated;
                 const unread = !event.readAt;
@@ -78,7 +78,7 @@ export default async function ActivityPage() {
                     </div>
                     {unread ? (
                       <span
-                        className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
+                        className="animate-pop mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
                         aria-label="Unread"
                       />
                     ) : null}

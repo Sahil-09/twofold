@@ -60,8 +60,10 @@ and the database are only fast when they are in the same region.
 
 - `app/layout.tsx` reads the theme from the `twofold_theme` cookie (`lib/theme.ts`), so it never
   queries. Login and the theme picker write that cookie.
-- `app/loading.tsx` is the skeleton the router paints while the page streams. Without it, dynamic
-  routes are not prefetched at all and every tap waits for a full server render.
+- Each route's `loading.tsx` (e.g. `app/(list)/loading.tsx`) is the skeleton the router paints while
+  that page streams. Without one, dynamic routes are not prefetched and every tap waits for a full
+  server render. Keep exactly one skeleton per route — a root-level `loading.tsx` flashes before the
+  target route's own skeleton and causes a visible jump.
 - `getCurrentUser` is wrapped in React `cache()`, and pages `Promise.all` the partner, the list, the
   new-wish check and the bell count. Never add a serial `await` before those.
 - The Vercel function region must match the Atlas cluster region (Mumbai, `bom1`, `ap-south-1`).

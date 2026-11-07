@@ -132,7 +132,7 @@ export function ListControls({
               setText("");
               write({ q: "" });
             }}
-            className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-body-md text-outline"
+            className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-body-md text-outline transition active:scale-90"
           >
             ×
           </button>
@@ -187,13 +187,13 @@ export function ListControls({
               setText("");
               write({ q: "", priority: "all", state: "all", sort: "wanted" });
             }}
-            className="rounded-full bg-surface-container px-3.5 py-2.5 text-label-md font-semibold text-on-surface-variant transition-transform active:scale-95"
+            className="animate-fade rounded-full bg-surface-container px-3.5 py-2.5 text-label-md font-semibold text-on-surface-variant transition-transform active:scale-95"
           >
             Clear
           </button>
         ) : null}
         {filtering ? (
-          <span aria-live="polite" className="text-label-sm text-outline">
+          <span aria-live="polite" className="animate-fade text-label-sm text-outline">
             {shown} of {total}
           </span>
         ) : null}

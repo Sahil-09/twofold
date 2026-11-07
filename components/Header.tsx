@@ -20,7 +20,7 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
           <Link
             href="/fulfilled"
             aria-label="Fulfilled wishes"
-            className="relative grid h-9 w-9 place-items-center rounded-full bg-surface-low text-on-surface-variant transition-colors hover:text-primary"
+            className="relative grid h-9 w-9 place-items-center rounded-full bg-surface-low text-on-surface-variant transition duration-200 hover:text-primary active:scale-90"
           >
             <FulfilledIcon className="h-[18px] w-[18px]" />
           </Link>
@@ -28,11 +28,11 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
           <Link
             href="/activity"
             aria-label={unread > 0 ? `Activity, ${unread} unread` : "Activity"}
-            className="relative grid h-9 w-9 place-items-center rounded-full bg-surface-low text-on-surface-variant transition-colors hover:text-primary"
+            className="relative grid h-9 w-9 place-items-center rounded-full bg-surface-low text-on-surface-variant transition duration-200 hover:text-primary active:scale-90"
           >
             <Icon name="bell" className="h-4 w-4" />
             {unread > 0 ? (
-              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-label-sm font-bold leading-none text-on-primary">
+              <span className="animate-pop absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-label-sm font-bold leading-none text-on-primary">
                 {unread > 9 ? "9+" : unread}
               </span>
             ) : null}
@@ -40,7 +40,7 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
 
           <Link
             href="/settings"
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 shadow-rest"
+            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 shadow-rest transition duration-200 active:scale-95"
             aria-label="Settings"
           >
             <span className="relative flex items-center justify-center">

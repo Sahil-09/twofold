@@ -21,11 +21,11 @@ export function Reservations({ tokens }: { tokens: { token: string; bought: bool
       </div>
 
       {tokens.length > 0 ? (
-        <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1">
+        <div className="stagger no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1">
           {tokens.map((entry) => (
             <div
               key={entry.token}
-              className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl bg-surface-low"
+              className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl bg-surface-low transition duration-300 hover:-translate-y-0.5 hover:shadow-float"
               role="img"
               aria-label={entry.bought ? "Something purchased" : "Something reserved"}
             >

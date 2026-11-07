@@ -58,8 +58,8 @@ export default async function SettingsPage() {
     <>
       <Header user={user} section="Settings" unread={unread} />
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
-        <div className="flex flex-col gap-8 pb-8 pt-3">
+      <main className="page-enter mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
+        <div className="stagger flex flex-col gap-8 pb-8 pt-3">
           {/* Hero card */}
           <div className="relative overflow-hidden rounded-3xl bg-surface-lowest p-6 shadow-rest">
             <div className="pointer-events-none absolute -right-14 -top-14 h-56 w-56 rounded-full bg-gradient-to-br from-primary-fixed/40 via-secondary-fixed/20 to-transparent blur-3xl" />
