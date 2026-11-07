@@ -116,6 +116,56 @@ export function HomeSkeleton() {
   );
 }
 
+/** The partner tab: hero banner, reserved summary, filters, horizontal cards. */
+export function PartnerSkeleton() {
+  return (
+    <>
+      <HeaderSkeleton title="w-32" />
+      <main
+        aria-busy="true"
+        className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16"
+      >
+        <span className="sr-only">Loading</span>
+        <div className="animate-pulse flex flex-col gap-6 pb-4 pt-3">
+          <div className="rounded-3xl bg-secondary-fixed/50 p-5 shadow-rest">
+            <div className="flex items-center justify-between gap-2">
+              <div className="h-6 w-36 rounded-full bg-surface-lowest/60" />
+              <div className="h-4 w-24 rounded-full bg-surface-lowest/40" />
+            </div>
+            <div className="flex flex-col gap-2 pt-5">
+              <div className="h-7 w-52 rounded-full bg-surface-lowest/60" />
+              <div className="h-4 w-64 rounded-full bg-surface-lowest/40" />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-full bg-surface-lowest px-4 py-3 shadow-rest">
+            <div className="flex items-center gap-2.5">
+              <div className="h-7 w-7 rounded-full bg-primary-fixed" />
+              <div className="h-3 w-52 rounded-full bg-surface-container" />
+            </div>
+            <div className="h-4 w-4 rounded-full bg-surface-container" />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="h-11 rounded-full bg-surface-lowest shadow-rest" />
+            <div className="flex flex-wrap gap-2">
+              <div className="h-10 w-28 rounded-full bg-surface-lowest shadow-rest" />
+              <div className="h-10 w-24 rounded-full bg-surface-lowest shadow-rest" />
+              <div className="h-10 w-20 rounded-full bg-surface-lowest shadow-rest" />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <RowCardSkeleton />
+            <RowCardSkeleton />
+          </div>
+        </div>
+      </main>
+      <NavSkeleton active="theirs" />
+    </>
+  );
+}
+
 function SwitchRowSkeleton() {
   return (
     <div className="flex items-start justify-between gap-5">
