@@ -41,6 +41,12 @@
     transform: translateY(0);
   }
 }
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
 
 :root {
   --surface: #fcf9f6;
@@ -305,6 +311,22 @@
   }
   .stagger > *:nth-child(8) {
     animation-delay: 175ms;
+  }
+
+  /* Installed-PWA cold start: cover the first paint, then get out of the way. */
+  .splash {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    place-items: center;
+    background: var(--surface);
+  }
+  @media (display-mode: standalone) {
+    .splash {
+      display: grid;
+      animation: splash-out 0.35s ease 0.55s forwards;
+    }
   }
 }
 
