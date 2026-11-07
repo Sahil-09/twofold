@@ -71,7 +71,6 @@ export default async function SettingsPage() {
                   <span className="grid h-11 w-11 place-items-center rounded-full bg-secondary-container text-label-lg font-bold text-secondary">
                     {initials(user.displayName)}
                   </span>
-                  <span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-primary ring-2 ring-surface-lowest" />
                 </div>
                 <div className="relative z-20 grid h-9 w-9 place-items-center rounded-full bg-primary text-on-primary shadow-md">
                   <Icon name="heart" className="h-4 w-4" />
@@ -80,7 +79,6 @@ export default async function SettingsPage() {
                   <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-fixed text-label-lg font-bold text-primary">
                     {partner ? initials(partner.displayName) : "?"}
                   </span>
-                  <span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-tertiary ring-2 ring-surface-lowest" />
                 </div>
               </div>
 
@@ -100,10 +98,6 @@ export default async function SettingsPage() {
           <section aria-label="Wishlist Sync & Rules">
             <div className="mb-3 flex items-baseline justify-between gap-3 px-1">
               <span className="section-title">Wishlist Sync &amp; Rules</span>
-              <span className="flex shrink-0 items-center gap-1.5 text-label-md font-medium text-primary">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                Synced live
-              </span>
             </div>
 
             <div className="card flex flex-col gap-5 rounded-3xl p-6">
