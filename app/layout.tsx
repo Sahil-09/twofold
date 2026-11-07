@@ -34,12 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const theme = isTheme(remembered) ? remembered : "system";
 
   return (
-    <html
-      lang="en"
-      data-theme={theme}
-      className={theme === "dark" ? "dark" : undefined}
-      suppressHydrationWarning
-    >
+    <html lang="en" data-theme={theme} suppressHydrationWarning>
       <head>
         <Script id="theme" strategy="beforeInteractive">
           {themeScript}
