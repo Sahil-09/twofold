@@ -158,7 +158,9 @@ export default async function SettingsPage() {
 
           {/* Preferences & Sharing */}
           <section aria-label="Preferences & Sharing">
-            <span className="label">Preferences &amp; Sharing</span>
+            <div className="mb-3 flex items-baseline justify-between gap-3 px-1">
+              <span className="section-title">Preferences &amp; Sharing</span>
+            </div>
 
             <div className="card flex flex-col gap-5 rounded-3xl p-6">
               <div className="flex flex-col gap-3">
