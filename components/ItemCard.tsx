@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { boughtAction, claimAction, givenAction, unboughtAction, unclaimAction } from "@/app/actions/claims";
+import { boughtAction, claimAction, givenAction, unboughtAction } from "@/app/actions/claims";
 import { hostOf, money, shortDate } from "@/lib/format";
 import type { ItemView } from "@/lib/items";
 import { priorityIcon, priorityLabel } from "@/lib/priority";
 import type { Priority } from "@/lib/types";
 import { Icon, MaskIcon } from "./icons";
+import { PurchaseActions } from "./PurchaseActions";
 import { Thumb } from "./Thumb";
 
 /** Chip colours per priority; the Stitch partner card uses the filled variants. */
@@ -177,32 +178,7 @@ export function ItemCard({
               </p>
             </div>
 
-            {!settled ? (
-              <div className="grid grid-cols-2 gap-2">
-                <form action={boughtAction}>
-                  <input type="hidden" name="itemId" value={item.id} />
-                  <button
-                    type="submit"
-                    aria-label="Mark as purchased"
-                    className="btn-primary h-11 w-full text-label-md"
-                  >
-                    <Icon name="checkCircle" className="h-4 w-4" />
-                    Purchased
-                  </button>
-                </form>
-
-                <form action={unclaimAction}>
-                  <input type="hidden" name="itemId" value={item.id} />
-                  <button
-                    type="submit"
-                    aria-label="Release — not buying this"
-                    className="btn-ghost h-11 w-full text-label-md"
-                  >
-                    Release
-                  </button>
-                </form>
-              </div>
-            ) : null}
+            {!settled ? <PurchaseActions itemId={item.id} /> : null}
           </>
         ) : (
           <form action={claimAction}>
