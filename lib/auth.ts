@@ -104,9 +104,35 @@ export async function requireUser(): Promise<CurrentUser> {
   return user;
 }
 
+/** The partner id never changes (two accounts), so cache the lookup, not the user doc. */
+const PARTNER_KEY = (userId: string) => `twofold:partner:${userId}`;
+const PARTNER_TTL_SEC = 3600;
+
 export async function getPartner(userId: string): Promise<CurrentUser | null> {
-  // Exactly two accounts by design, so "the other user" is the partner.
-  const doc = await db().collection<UserDoc>("users").findOne({ _id: { $ne: userId } });
-  if (!doc) return null;
-  return getUserById(doc._id);
+  const client = redis();
+  let partnerId: string | null = null;
+
+  if (client) {
+    try {
+      partnerId = await client.get(PARTNER_KEY(userId));
+    } catch {
+      // Fall through to Mongo on any Redis hiccup.
+    }
+  }
+
+  if (!partnerId) {
+    // Exactly two accounts by design, so "the other user" is the partner.
+    const doc = await db().collection<UserDoc>("users").findOne({ _id: { $ne: userId } });
+    if (!doc) return null;
+    partnerId = doc._id;
+    if (client) {
+      try {
+        await client.set(PARTNER_KEY(userId), partnerId, "EX", PARTNER_TTL_SEC);
+      } catch {
+        // Cache is best-effort; never fail the read.
+      }
+    }
+  }
+
+  return getUserById(partnerId);
 }

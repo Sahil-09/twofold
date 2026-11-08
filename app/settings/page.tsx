@@ -49,10 +49,12 @@ function Row({
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const [partner, unread] = await Promise.all([getPartner(user.id), unreadActivityCount(user.id)]);
+  const [partner, unread, hasNew] = await Promise.all([
+    getPartner(user.id),
+    unreadActivityCount(user.id),
+    user.notifyPartnerUpdates ? partnerHasNew(user.id, user.partnerSeenAt) : false,
+  ]);
   const since = user.createdAt.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-  const hasNew =
-    partner && user.notifyPartnerUpdates ? await partnerHasNew(partner.id, user.partnerSeenAt) : false;
 
   return (
     <>

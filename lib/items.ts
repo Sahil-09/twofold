@@ -95,12 +95,16 @@ export async function getFulfilled(viewerId: string, partnerId: string | null) {
   };
 }
 
-/** True when the partner has a wanted, non-secret item newer than the last time this user looked. */
-export async function partnerHasNew(partnerId: string, seenAt?: Date): Promise<boolean> {
+/**
+ * True when the partner has a wanted, non-secret item newer than the last time this user looked.
+ * Keyed on the viewer, not the partner id, so callers can run it without waiting for getPartner —
+ * exactly two accounts, the same invariant getPartner and recordActivity already rely on.
+ */
+export async function partnerHasNew(userId: string, seenAt?: Date): Promise<boolean> {
   const count = await db()
     .collection<ItemDoc>("items")
     .countDocuments({
-      ownerId: partnerId,
+      ownerId: { $ne: userId },
       status: "wanted",
       secret: { $ne: true },
       deletedAt: { $exists: false },
