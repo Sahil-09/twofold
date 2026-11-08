@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { CurrentUser } from "@/lib/auth";
 import { initials } from "@/lib/format";
-import { Icon, FulfilledIcon } from "./icons";
+import { Icon, MaskIcon } from "./icons";
 
 /** Fixed twin header. The unread count is fetched by the page so it can run alongside the list. */
 export function Header({ user, section, unread }: { user: CurrentUser; section: string; unread: number }) {
@@ -22,7 +22,7 @@ export function Header({ user, section, unread }: { user: CurrentUser; section: 
             aria-label="Fulfilled wishes"
             className="relative grid h-9 w-9 place-items-center rounded-full bg-surface-low text-on-surface-variant transition duration-200 hover:text-primary active:scale-90"
           >
-            <FulfilledIcon className="h-[18px] w-[18px]" />
+            <MaskIcon name="gift" className="h-[18px] w-[18px]" />
           </Link>
 
           <Link

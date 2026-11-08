@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ItemCard } from "@/components/ItemCard";
 import { Header } from "@/components/Header";
-import { FulfilledIcon } from "@/components/icons";
+import { MaskIcon } from "@/components/icons";
 import { getPartner, requireUser } from "@/lib/auth";
 import { getFulfilled } from "@/lib/items";
 
@@ -32,7 +32,7 @@ export default async function FulfilledPage() {
 
           {own.length === 0 && given.length === 0 ? (
             <div className="card grid place-items-center gap-2 px-6 py-16 text-center">
-              <FulfilledIcon className="h-8 w-8 text-outline-variant" />
+              <MaskIcon name="gift" className="h-8 w-8 text-outline-variant" />
               <p className="text-title-md font-semibold">Nothing fulfilled yet</p>
               <p className="max-w-xs text-body-md text-on-surface-variant">When you give a gift or archive a wish, it shows here.</p>
             </div>

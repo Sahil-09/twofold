@@ -4,7 +4,7 @@ import { hostOf, money, shortDate } from "@/lib/format";
 import type { ItemView } from "@/lib/items";
 import { priorityIcon, priorityLabel } from "@/lib/priority";
 import type { Priority } from "@/lib/types";
-import { Icon } from "./icons";
+import { Icon, MaskIcon } from "./icons";
 import { Thumb } from "./Thumb";
 
 /** Chip colours per priority; the Stitch partner card uses the filled variants. */
@@ -134,33 +134,38 @@ export function ItemCard({
                   {settled ? `Given to ${partnerName ?? "them"}` : `Purchased by you on ${shortDate(item.claim.boughtAt ?? item.claim.claimedAt)}`}
                 </p>
                 <p className="mt-0.5 text-label-sm text-on-primary-fixed-variant">
-                  {settled ? `Gift delivered and archived · ${shortDate(item.archivedAt)}` : `Hidden from ${partnerName ?? "them"}. Packaged &amp; ready to surprise! 🎉`}
+                  {settled ? `Gift delivered and archived · ${shortDate(item.archivedAt)}` : `Hidden from ${partnerName ?? "them"}. Packaged & ready to surprise! 🎉`}
                 </p>
               </div>
               <Icon name="receipt" className="h-4 w-4 shrink-0 text-primary" />
             </div>
 
             {!settled ? (
-              <>
-                <div className="flex items-center justify-center gap-2 rounded-full bg-primary py-3 text-label-lg font-bold text-on-primary">
-                  <Icon name="checkCircle" className="h-4 w-4" />
-                  Marked as Purchased 🎉
-                </div>
-
-                <form action={unboughtAction} className="text-center">
-                  <input type="hidden" name="itemId" value={item.id} />
-                  <button type="submit" className="text-label-sm text-on-surface-variant underline decoration-outline-variant underline-offset-4">
-                    Undo — not purchased
-                  </button>
-                </form>
-
+              <div className="grid grid-cols-2 gap-2">
                 <form action={givenAction}>
                   <input type="hidden" name="itemId" value={item.id} />
-                  <button type="submit" className="btn-soft h-11 w-full text-label-md">
-                    Given — archive it
+                  <button
+                    type="submit"
+                    aria-label="Given — archive it"
+                    className="btn-primary h-11 w-full text-label-md"
+                  >
+                    <MaskIcon name="archive" className="h-4 w-4" />
+                    Given
                   </button>
                 </form>
-              </>
+
+                <form action={unboughtAction}>
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <button
+                    type="submit"
+                    aria-label="Undo — not purchased"
+                    className="btn-ghost h-11 w-full text-label-md"
+                  >
+                    <MaskIcon name="undo" className="h-4 w-4" />
+                    Undo
+                  </button>
+                </form>
+              </div>
             ) : null}
           </>
         ) : item.claim ? (
@@ -173,25 +178,30 @@ export function ItemCard({
             </div>
 
             {!settled ? (
-              <>
+              <div className="grid grid-cols-2 gap-2">
                 <form action={boughtAction}>
-                  <input type="hidden" name="itemId" value={item.id} />
-                  <button type="submit" className="btn-primary w-full">
-                    <Icon name="checkCircle" className="h-4 w-4" />
-                    Mark as purchased 🎉
-                  </button>
-                </form>
-
-                <form action={unclaimAction} className="text-center">
                   <input type="hidden" name="itemId" value={item.id} />
                   <button
                     type="submit"
-                    className="text-label-sm text-on-surface-variant underline decoration-outline-variant underline-offset-4"
+                    aria-label="Mark as purchased"
+                    className="btn-primary h-11 w-full text-label-md"
+                  >
+                    <Icon name="checkCircle" className="h-4 w-4" />
+                    Purchased
+                  </button>
+                </form>
+
+                <form action={unclaimAction}>
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <button
+                    type="submit"
+                    aria-label="Release — not buying this"
+                    className="btn-ghost h-11 w-full text-label-md"
                   >
                     Release
                   </button>
                 </form>
-              </>
+              </div>
             ) : null}
           </>
         ) : (

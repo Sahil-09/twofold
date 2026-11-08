@@ -52,14 +52,26 @@ export function Icon({ name, className = "h-5 w-5" }: { name: IconName; classNam
   );
 }
 
-/** Icons8 "Gift" (Material Outlined, id 85026) masked to follow currentColor like the strokes. */
-export function FulfilledIcon({ className = "h-5 w-5" }: { className?: string }) {
+/** Icons8 Material Outlined PNGs (96px) masked so they follow currentColor like the strokes. */
+const masks = {
+  gift: "/icons/gift.png", // id 85026
+  undo: "/icons/undo.png", // id 85943
+  archive: "/icons/archive.png", // id 110631
+} as const;
+
+export function MaskIcon({
+  name,
+  className = "h-5 w-5",
+}: {
+  name: keyof typeof masks;
+  className?: string;
+}) {
   return (
     <span
       className={`inline-block shrink-0 bg-[currentColor] ${className}`}
       style={{
-        maskImage: "url(/icons/gift.png)",
-        WebkitMaskImage: "url(/icons/gift.png)",
+        maskImage: `url(${masks[name]})`,
+        WebkitMaskImage: `url(${masks[name]})`,
         maskSize: "contain",
         WebkitMaskSize: "contain",
         maskRepeat: "no-repeat",
