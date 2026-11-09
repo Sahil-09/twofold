@@ -4,7 +4,6 @@ import Script from "next/script";
 import { cookies } from "next/headers";
 import { isTheme, THEME_COOKIE } from "@/lib/theme";
 import { Splash } from "@/components/Splash";
-import SentryInit from "./sentry-init";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -43,7 +42,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </Script>
       </head>
       <body className={`${jakarta.variable} font-sans`}>
-        <SentryInit />
         <Splash />
         {children}
       </body>

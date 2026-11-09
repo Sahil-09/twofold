@@ -1,14 +1,9 @@
-/**
- * Server-side Sentry options passed to `withSentryConfig` in `next.config.ts`.
- *
- * Org: "kraddy" (provided)
- * Project: "twofold" (from package.json name)
- * Run code: "25ab17fac8" (provided — kept here for reference)
- *
- * The DSN is auto-constructed from SENTRY_AUTH_TOKEN env var plus the org/project above.
- * Create an auth token at https://sentry.io/settings/account/api/auth-tokens/
- */
-export default {
-  org: "kraddy",
-  project: "twofold",
-};
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  tracesSampleRate: 0.2,
+  // Only capture errors in production to avoid noise in dev
+  enabled: process.env.NODE_ENV === "production",
+});

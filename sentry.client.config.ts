@@ -1,14 +1,9 @@
-import type { BrowserOptions } from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
-/**
- * Client-side Sentry configuration.
- * This is loaded automatically when imported in a client component.
- *
- * The DSN is auto-constructed from SENTRY_AUTH_TOKEN, SENTRY_ORG, and SENTRY_PROJECT.
- */
-export default {
-  // DSN will be auto-constructed
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   tracesSampleRate: 0.1,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-} satisfies BrowserOptions;
+  enabled: process.env.NODE_ENV === "production",
+});
