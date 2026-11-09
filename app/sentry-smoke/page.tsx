@@ -1,10 +1,16 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function SentrySmokePage() {
   const [clicked, setClicked] = useState(false);
+  const dsn = Sentry.getClient()?.getOptions()?.dsn ?? "(no DSN — SDK disabled, nothing will be sent)";
+
+  useEffect(() => {
+    // Send a known event immediately so we know if the SDK is alive.
+    Sentry.captureMessage("sentry-smoke: page mounted", "info");
+  }, []);
 
   const triggerClientError = () => {
     setClicked(true);
@@ -23,6 +29,9 @@ export default function SentrySmokePage() {
   return (
     <div style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "520px" }}>
       <h1>Sentry smoke test</h1>
+      <p style={{ fontSize: "0.85rem", color: "#544243", wordBreak: "break-all" }}>
+        SDK DSN (debug): <code>{dsn}</code>
+      </p>
       <p>
         Click one of the buttons. If the SDK is wired up and NEXT_PUBLIC_SENTRY_DSN is set, an event
         will appear in your Sentry project.
