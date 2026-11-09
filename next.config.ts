@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs/config";
+import sentryServerConfig from "./sentry.server.config";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["mongodb", "web-push", "playwright-core", "@sparticuz/chromium"],
@@ -9,4 +11,4 @@ const nextConfig: NextConfig = {
 };
 
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, sentryServerConfig);

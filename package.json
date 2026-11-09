@@ -13,6 +13,7 @@
     "set-password": "node scripts/set-password.ts"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.78.0",
     "@sparticuz/chromium": "^153.0.0",
     "canvas-confetti": "^1.9.4",
     "ioredis": "^6.0.0",
