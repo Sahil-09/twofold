@@ -210,23 +210,7 @@ export default async function HomePage({
 
           {!theirs && user.surpriseMode ? <Reservations tokens={list.reservations} /> : null}
 
-          {theirs ? (
-            <div className="flex flex-col items-center gap-1 px-4 pb-2 pt-4 text-center text-on-surface-variant">
-              <div className="flex items-center gap-1.5 text-primary">
-                <Icon name="heart" className="h-3.5 w-3.5" />
-                <span className="text-label-md font-bold">
-                  {partnerReveals
-                    ? `${owner} can see which wishes you claimed`
-                    : `${owner} has no notification of your clicks`}
-                </span>
-              </div>
-              <p className="max-w-xs text-label-sm text-outline">
-                {partnerReveals
-                  ? `${owner} turned Surprise Mode off, so your reservations and purchases show on their list. Turn it back on in their settings to hide them.`
-                  : "Keep the magic of anticipation alive. Everything on this tab stays confidential between you and Twofold."}
-              </p>
-            </div>
-          ) : null}
+
         </div>
       </main>
 
