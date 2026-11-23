@@ -9,6 +9,21 @@ export function canViewItem(
   return item.ownerId === viewerId || !item.secret || claimedByViewer;
 }
 
+/**
+ * Where an activity row or its push lands: the tab that owns the item, the card itself, and — for
+ * comments — the `note` flag that tells the list page to open that card's notes.
+ */
+export function activityHref(
+  itemId: string,
+  ownerId: string | undefined,
+  actorId: string,
+  comment = false,
+): string {
+  const base = (ownerId ?? actorId) === actorId ? "/?tab=theirs" : "/";
+  const note = comment ? `${base.includes("?") ? "&" : "?"}note=${encodeURIComponent(itemId)}` : "";
+  return `${base}${note}#item-${itemId}`;
+}
+
 export type CommentView = {
   id: string;
   body: string;

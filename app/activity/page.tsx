@@ -6,6 +6,7 @@ import { OnMount } from "@/components/OnMount";
 import { activityFor, unreadActivityCount } from "@/lib/activity";
 import { getPartner, requireUser } from "@/lib/auth";
 import { relativeTime } from "@/lib/format";
+import { activityHref } from "@/lib/view";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,11 @@ export default async function ActivityPage() {
                 const copy = COPY[event.kind] ?? COPY.updated;
                 const unread = !event.readAt;
                 return (
-                  <div key={event._id} className="flex items-start gap-3 p-3">
+                  <Link
+                    key={event._id}
+                    href={activityHref(event.itemId, event.ownerId, event.actorId, event.kind === "commented")}
+                    className="flex items-start gap-3 rounded-2xl p-3 transition-colors hover:bg-surface-low"
+                  >
                     <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-low text-primary">
                       <Icon name={copy.icon} className="h-4 w-4" />
                     </span>
@@ -83,7 +88,7 @@ export default async function ActivityPage() {
                         aria-label="Unread"
                       />
                     ) : null}
-                  </div>
+                  </Link>
                 );
               })}
             </div>

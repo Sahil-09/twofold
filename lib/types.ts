@@ -74,6 +74,8 @@ export type ActivityDoc = {
   _id: string;
   recipientId: string;
   actorId: string;
+  /** Absent on legacy rows: the actor owned the item then, so callers fall back to actorId. */
+  ownerId?: string;
   kind: "added" | "updated" | "archived" | "commented";
   itemId: string;
   title: string;

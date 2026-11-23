@@ -36,7 +36,8 @@ items        { _id, ownerId, url?, title, imageUrl?,
                createdAt, updatedAt }
 claims       { _id, itemId, claimantId, claimedAt, boughtAt?, archivedAt? }
 comments     { _id, itemId, authorId, body, createdAt, deletedAt? }
-activity     { _id, recipientId, actorId, kind: 'added'|'updated'|'archived'|'commented',
+activity     { _id, recipientId, actorId, ownerId?,
+               kind: 'added'|'updated'|'archived'|'commented',
                itemId, title, at, readAt? }
 pushSubs     { _id, userId, endpoint, keys, createdAt }
 priceChecks  { _id, itemId, checkedAt, price?, ok, error? }
@@ -113,8 +114,9 @@ Three destinations, one mobile shell (fixed header + floating bottom nav).
   Every card carries an expandable notes thread (append-only, with a post form).
 - Theirs: cards with priority, quantity, occasion, and claim / mark-bought actions visible only to
   the claimant. No alert state on the partner's cards. Opening it clears the "new wishes" nav dot.
-- Activity: what the partner added, edited or archived, with an unread count on the header bell.
-  Opening it marks everything read.
+- Activity: what the partner added, edited, commented on or archived, with an unread count on the
+  header bell. Opening it marks everything read. Rows and pushes deep-link to the item card; comment
+  arrivals also carry `?note=<itemId>` so that card's notes open on arrival.
 - Settings: name, appearance (light/dark/system), and four working switches — Price Drop Alerts (this
   device's push subscription), Partner updates (`notifyPartnerUpdates`, silent when off), Surprise Mode
   (`surpriseMode`) and Automatic Link Scraper (`autoParse`). Every user-visible rule is a real toggle;

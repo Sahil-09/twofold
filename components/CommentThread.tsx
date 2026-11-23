@@ -1,9 +1,12 @@
+"use client";
+
 import { addCommentAction } from "@/app/actions/comments";
+import { useRouter } from "next/navigation";
 import { relativeTime } from "@/lib/format";
 import type { CommentView } from "@/lib/view";
 import { Icon } from "./icons";
 
-/** Native <details> keeps the thread expandable without a client component. */
+/** Native <details> owns the open state; a toggle just asks the server for fresh notes. */
 export function CommentThread({
   itemId,
   comments,
@@ -16,9 +19,13 @@ export function CommentThread({
   partnerName?: string;
 }) {
   const count = comments?.length ?? 0;
+  const router = useRouter();
 
   return (
-    <details className="overflow-hidden rounded-2xl bg-surface-low">
+    <details
+      className="overflow-hidden rounded-2xl bg-surface-low"
+      onToggle={() => router.refresh()}
+    >
       <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 [&::-webkit-details-marker]:hidden">
         <Icon name="chat" className="h-4 w-4 shrink-0 text-outline" />
         <span className="text-label-sm font-semibold text-on-surface-variant">

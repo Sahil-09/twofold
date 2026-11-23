@@ -19,9 +19,7 @@ export async function addCommentAction(itemId: unknown, formData: FormData): Pro
   await recordActivity(
     user,
     "commented",
-    { _id: item._id, title: item.title, secret: item.secret },
-    // Comment on your own item → partner's Theirs tab; on theirs → your own list.
-    item.ownerId === user.id ? "/?tab=theirs" : "/",
+    { _id: item._id, title: item.title, secret: item.secret, ownerId: item.ownerId },
   );
   revalidatePath("/", "layout");
 }

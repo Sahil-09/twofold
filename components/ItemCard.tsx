@@ -61,7 +61,10 @@ export function ItemCard({
 
   if (mine) {
     return (
-      <article className="group card flex flex-col gap-4 rounded-3xl p-5 transition duration-300 hover:shadow-float active:scale-[0.995]">
+      <article
+        id={`item-${item.id}`}
+        className="group card flex scroll-mt-20 flex-col gap-4 rounded-3xl p-5 transition duration-300 hover:shadow-float active:scale-[0.995]"
+      >
         <div className="flex items-center justify-between gap-3">
           <span className={`chip ${tone.filled}`}>
             <Icon name={priorityIcon(item.priority)} className="h-3.5 w-3.5" />
@@ -201,7 +204,10 @@ export function ItemCard({
   }
 
   return (
-    <article className="group card flex flex-col gap-3 rounded-3xl p-5 transition duration-300 hover:shadow-float active:scale-[0.995]">
+    <article
+      id={`item-${item.id}`}
+      className="group card flex scroll-mt-20 flex-col gap-3 rounded-3xl p-5 transition duration-300 hover:shadow-float active:scale-[0.995]"
+    >
       <div className="relative h-48 w-full overflow-hidden rounded-2xl bg-surface-low">
         <a href={item.url} target="_blank" rel="noreferrer noopener" className="block h-full w-full">
           <Thumb src={item.imageUrl} alt={item.title} className="h-48 w-full" />

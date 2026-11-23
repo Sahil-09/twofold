@@ -7,6 +7,7 @@ import { ItemCard } from "@/components/ItemCard";
 import { ListControls } from "@/components/ListControls";
 import { OnMount } from "@/components/OnMount";
 import { Reservations } from "@/components/Reservations";
+import { ScrollToHash } from "@/components/ScrollToHash";
 import { unreadActivityCount } from "@/lib/activity";
 import { getPartner, requireUser } from "@/lib/auth";
 import { money } from "@/lib/format";
@@ -70,6 +71,7 @@ export default async function HomePage({
       <main className="page-enter mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-28 pt-16">
         <div className="flex flex-col gap-6 pb-4 pt-3">
           {theirs ? <OnMount action={markPartnerSeenAction} /> : null}
+          <ScrollToHash />
           {theirs ? (
             <>
               <div className="relative overflow-hidden rounded-3xl bg-secondary-fixed p-5 shadow-rest">

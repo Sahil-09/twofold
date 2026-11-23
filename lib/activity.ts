@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { db } from "./db";
 import { sendPush } from "./push";
 import type { ActivityDoc, ItemDoc, UserDoc } from "./types";
+import { activityHref } from "./view";
 
 const VERBS: Record<ActivityDoc["kind"], string> = {
   added: "added",
@@ -17,8 +18,7 @@ const VERBS: Record<ActivityDoc["kind"], string> = {
 export async function recordActivity(
   actor: { id: string; displayName: string },
   kind: ActivityDoc["kind"],
-  item: Pick<ItemDoc, "_id" | "title" | "secret">,
-  url = "/?tab=theirs",
+  item: Pick<ItemDoc, "_id" | "title" | "secret"> & { ownerId?: string },
 ): Promise<void> {
   try {
     // Exactly two accounts, so "the other user" is the partner.
@@ -29,6 +29,7 @@ export async function recordActivity(
       _id: randomUUID(),
       recipientId: partner._id,
       actorId: actor.id,
+      ownerId: item.ownerId ?? actor.id,
       kind,
       itemId: item._id,
       title: item.title,
@@ -38,7 +39,7 @@ export async function recordActivity(
     await sendPush(partner._id, {
       title: `${actor.displayName} ${VERBS[kind]} a wish`,
       body: item.title,
-      url,
+      url: activityHref(item._id, item.ownerId, actor.id, kind === "commented"),
     });
   } catch {
     // A notification is best effort; it must never fail the save that caused it.
