@@ -29,6 +29,7 @@ const users = await database
   .updateMany({ partnerSeenAt: { $exists: false } }, { $set: { partnerSeenAt: new Date() } });
 
 await database.collection("activity").createIndex({ recipientId: 1, at: -1 });
+await database.collection("comments").createIndex({ itemId: 1, createdAt: 1 });
 
 console.log(`total migrations: ${total}`);
 console.log(`partnerSeenAt stamped: ${users.modifiedCount}`);

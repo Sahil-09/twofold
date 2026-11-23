@@ -7,16 +7,18 @@ const VERBS: Record<ActivityDoc["kind"], string> = {
   added: "added",
   updated: "updated",
   archived: "archived",
+  commented: "commented on",
 };
 
 /**
- * Tells the *partner* that the owner touched their own list.
- * Called from item mutations only — a claim must never produce one of these.
+ * Tells the *partner* about an item edit or a new comment.
+ * Called from item and comment mutations only — a claim must never produce one of these.
  */
 export async function recordActivity(
   actor: { id: string; displayName: string },
   kind: ActivityDoc["kind"],
   item: Pick<ItemDoc, "_id" | "title" | "secret">,
+  url = "/?tab=theirs",
 ): Promise<void> {
   try {
     // Exactly two accounts, so "the other user" is the partner.
@@ -36,7 +38,7 @@ export async function recordActivity(
     await sendPush(partner._id, {
       title: `${actor.displayName} ${VERBS[kind]} a wish`,
       body: item.title,
-      url: "/?tab=theirs",
+      url,
     });
   } catch {
     // A notification is best effort; it must never fail the save that caused it.

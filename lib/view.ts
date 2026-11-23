@@ -1,5 +1,22 @@
 import type { ItemDoc, Priority } from "./types";
 
+/** One secret rule for lists, item access and comment access. */
+export function canViewItem(
+  viewerId: string,
+  item: Pick<ItemDoc, "ownerId" | "secret">,
+  claimedByViewer = false,
+): boolean {
+  return item.ownerId === viewerId || !item.secret || claimedByViewer;
+}
+
+export type CommentView = {
+  id: string;
+  body: string;
+  createdAt: string;
+  /** True when the item's owner wrote it; cards render that as "You" or the partner. */
+  byOwner: boolean;
+};
+
 /** The only shape an item is ever sent to the browser in. */
 export type ItemView = {
   id: string;
@@ -21,6 +38,7 @@ export type ItemView = {
    */
   claim?: { claimedAt: string; boughtAt?: string; bought: boolean };
   archivedAt?: string;
+  comments?: CommentView[];
 };
 
 export type ListView = {

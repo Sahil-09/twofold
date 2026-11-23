@@ -60,12 +60,21 @@ export type ClaimDoc = {
   deletedAt?: Date;
 };
 
-/** Written only for owner-side edits; a claim never produces one. */
+export type CommentDoc = {
+  _id: string;
+  itemId: string;
+  authorId: string;
+  body: string;
+  createdAt: Date;
+  deletedAt?: Date;
+};
+
+/** Written only for owner-side edits and comments; a claim never produces one. */
 export type ActivityDoc = {
   _id: string;
   recipientId: string;
   actorId: string;
-  kind: "added" | "updated" | "archived";
+  kind: "added" | "updated" | "archived" | "commented";
   itemId: string;
   title: string;
   at: Date;

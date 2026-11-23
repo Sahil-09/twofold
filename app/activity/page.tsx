@@ -13,6 +13,7 @@ const COPY: Record<string, { icon: IconName; line: string }> = {
   added: { icon: "plus", line: "added a new wish" },
   updated: { icon: "pencil", line: "updated a wish" },
   archived: { icon: "receipt", line: "archived a wish" },
+  commented: { icon: "chat", line: "commented on a wish" },
 };
 
 export default async function ActivityPage() {

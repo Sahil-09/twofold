@@ -1,10 +1,11 @@
 ﻿import { randomUUID } from "node:crypto";
+import { loadComments } from "./comments";
 import { db } from "./db";
 import { getOwnerListRaw, invalidateOwnerList } from "./item-cache";
 import type { ClaimDoc, ItemDoc, UserDoc } from "./types";
 import type { ItemInput } from "./schema";
 import { priorityRank } from "./priority";
-import { ownerView, toView, type ListView } from "./view";
+import { canViewItem, ownerView, toView, type ItemView, type ListView } from "./view";
 
 export type { ItemView, ListView } from "./view";
 
@@ -28,33 +29,33 @@ export async function getList(
 
   // A secret item never reaches the partner, unless they reserved it before it was made secret —
   // yanking someone's plan is worse than a slightly weaker surprise.
-  const items =
-    viewerId === ownerId
-      ? wanted
-      : wanted.filter((item) => !item.secret || mine.has(item._id));
+  const items = wanted.filter((item) => canViewItem(viewerId, item, mine.has(item._id)));
 
   items.sort(
     (a, b) => priorityRank(a.priority) - priorityRank(b.priority) || +b.createdAt - +a.createdAt,
   );
 
+  const comments = await loadComments(items.map((item) => item._id), ownerId);
+  const withNotes = (view: ItemView): ItemView => ({ ...view, comments: comments.get(view.id) });
+
   if (viewerId === ownerId) {
     // With Surprise Mode on (the default) the owner gets a count and a riddle, never a mapping.
     if (!revealClaims) {
       return {
-        items: items.map((item) => ownerView(item)),
+        items: items.map((item) => withNotes(ownerView(item))),
         reservations: claims.map((claim) => ({ token: randomUUID(), bought: Boolean(claim.boughtAt) })),
       };
     }
 
     const byItem = new Map(claims.map((c) => [c.itemId, c]));
     return {
-      items: items.map((item) => ownerView(item, byItem.get(item._id))),
+      items: items.map((item) => withNotes(ownerView(item, byItem.get(item._id)))),
       reservations: [],
     };
   }
 
   return {
-    items: items.map((item) => toView(item, mine.get(item._id))),
+    items: items.map((item) => withNotes(toView(item, mine.get(item._id)))),
     reservations: [],
   };
 }
@@ -86,11 +87,19 @@ export async function getFulfilled(viewerId: string, partnerId: string | null) {
         .sort({ updatedAt: -1 })
         .toArray()
     : [];
+  const [ownComments, givenComments] = await Promise.all([
+    loadComments(own.map((i) => i._id), viewerId),
+    loadComments(given.map((i) => i._id), partnerId ?? ""),
+  ]);
+
   return {
-    own: own.map((i) => ownerView(i)),
+    own: own.map((i) => ({ ...ownerView(i), comments: ownComments.get(i._id) })),
     given: given.map((i) => {
       const claim = claimsByItem.get(i._id);
-      return toView(i, claim ? { claimedAt: claim.claimedAt, boughtAt: claim.boughtAt } : undefined);
+      return {
+        ...toView(i, claim ? { claimedAt: claim.claimedAt, boughtAt: claim.boughtAt } : undefined),
+        comments: givenComments.get(i._id),
+      };
     }),
   };
 }
@@ -123,6 +132,20 @@ export async function getItem(ownerId: string, itemId: string): Promise<ItemDoc 
   return db()
     .collection<ItemDoc>("items")
     .findOne({ _id: itemId, ownerId, deletedAt: { $exists: false } });
+}
+
+/** Used by the comment action: re-read the item and re-check visibility, never trust the client. */
+export async function getVisibleItem(viewerId: string, itemId: string): Promise<ItemDoc | null> {
+  const item = await db()
+    .collection<ItemDoc>("items")
+    .findOne({ _id: itemId, deletedAt: { $exists: false } });
+  if (!item) return null;
+  if (canViewItem(viewerId, item)) return item;
+
+  const claim = await db()
+    .collection<ClaimDoc>("claims")
+    .findOne({ itemId, claimantId: viewerId, deletedAt: { $exists: false } });
+  return canViewItem(viewerId, item, Boolean(claim)) ? item : null;
 }
 
 export async function createItem(ownerId: string, input: ItemInput): Promise<string> {
@@ -186,6 +209,9 @@ export async function deleteItem(ownerId: string, itemId: string): Promise<void>
     .updateMany({ itemId, deletedAt: { $exists: false } }, { $set: { deletedAt: now } });
   await db()
     .collection("activity")
+    .updateMany({ itemId, deletedAt: { $exists: false } }, { $set: { deletedAt: now } });
+  await db()
+    .collection("comments")
     .updateMany({ itemId, deletedAt: { $exists: false } }, { $set: { deletedAt: now } });
   await invalidateOwnerList(ownerId);
 }

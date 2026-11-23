@@ -55,6 +55,11 @@ export const LoginInput = z.object({
 
 export const ClaimInput = z.object({ itemId: z.string().min(1).max(100) });
 
+export const CommentInput = z.object({
+  itemId: z.string().min(1).max(100),
+  body: z.string().trim().min(1, "Write a note first").max(1000),
+});
+
 export const SettingsInput = z.object({
   displayName: z.string().trim().min(1).max(60),
   theme: z.enum(["light", "dark", "system"]),

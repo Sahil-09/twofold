@@ -4,6 +4,7 @@ import { hostOf, money, shortDate } from "@/lib/format";
 import type { ItemView } from "@/lib/items";
 import { priorityIcon, priorityLabel } from "@/lib/priority";
 import type { Priority } from "@/lib/types";
+import { CommentThread } from "./CommentThread";
 import { Icon, MaskIcon } from "./icons";
 import { PurchaseActions } from "./PurchaseActions";
 import { Thumb } from "./Thumb";
@@ -120,6 +121,13 @@ export function ItemCard({
             <p className="text-label-sm italic text-on-surface-variant">“{item.note}”</p>
           </div>
         ) : null}
+
+        <CommentThread
+          itemId={item.id}
+          comments={item.comments}
+          mine
+          partnerName={partnerName}
+        />
 
         {item.claim ? (
           <div className="animate-pop flex items-center gap-2 rounded-2xl bg-primary-fixed/40 px-3 py-2">
@@ -250,6 +258,13 @@ export function ItemCard({
           </p>
         </div>
       ) : null}
+
+      <CommentThread
+        itemId={item.id}
+        comments={item.comments}
+        mine={false}
+        partnerName={partnerName}
+      />
 
       {item.claim?.bought ? (
         <>

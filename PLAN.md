@@ -35,14 +35,16 @@ items        { _id, ownerId, url?, title, imageUrl?,
                targetPrice?, alertedAt?, status: 'wanted'|'archived',
                createdAt, updatedAt }
 claims       { _id, itemId, claimantId, claimedAt, boughtAt?, archivedAt? }
-activity     { _id, recipientId, actorId, kind: 'added'|'updated'|'archived',
+comments     { _id, itemId, authorId, body, createdAt, deletedAt? }
+activity     { _id, recipientId, actorId, kind: 'added'|'updated'|'archived'|'commented',
                itemId, title, at, readAt? }
 pushSubs     { _id, userId, endpoint, keys, createdAt }
 priceChecks  { _id, itemId, checkedAt, price?, ok, error? }
 ```
 
 Indexes: `items.ownerId + status`, `claims.itemId` (unique), `claims.claimantId`,
-`pushSubs.userId`, `priceChecks.itemId + checkedAt`, `activity.recipientId + at`.
+`comments.itemId + createdAt`, `pushSubs.userId`, `priceChecks.itemId + checkedAt`,
+`activity.recipientId + at`.
 
 No price history table. The job overwrites `items.price`; a "drop" is
 `newPrice <= targetPrice && !alertedAt`, then `alertedAt` is set so it fires once.
@@ -61,8 +63,12 @@ by hand.
   write no activity. The one exception: a partner who claimed it before it was made secret keeps it.
 - Owner-visible status moves to `archived` only when the partner archives. Marking bought changes
   nothing the owner can see — otherwise the surprise leaks at order time.
-- Partner activity is written only from item create/update/archive. Claims and purchases never write
-  one, so the bell cannot leak a surprise either.
+- Partner activity is written only from item create/update/archive and from new notes. Claims and
+  purchases never write one, so the bell cannot leak a surprise either.
+- Notes (comments) are append-only and live inline on each card. Either person can note either list's
+  items, but a secret item is refused to everyone but its owner (plus the claimed-before-secret
+  exception). A new note writes activity and pushes to the other account; secret items stay silent,
+  `notifyPartnerUpdates: false` mutes it, and the payload carries no claim data.
 
 ## Parsing pipeline
 
@@ -104,6 +110,7 @@ Three destinations, one mobile shell (fixed header + floating bottom nav).
   price). The partner's tab adds "planned by me / not planned", since it is the only side that has
   claim data. State lives in the URL (`?q=&priority=&state=&sort=`); counts and the vault keep using
   the unfiltered list, and price sorts only appear when every priced wish shares one currency.
+  Every card carries an expandable notes thread (append-only, with a post form).
 - Theirs: cards with priority, quantity, occasion, and claim / mark-bought actions visible only to
   the claimant. No alert state on the partner's cards. Opening it clears the "new wishes" nav dot.
 - Activity: what the partner added, edited or archived, with an unread count on the header bell.
@@ -126,13 +133,16 @@ app/fulfilled/page.tsx   archived items + given gifts
 app/settings/page.tsx    profile, appearance, real switches
 app/actions/items.ts     create, update, delete, archive
 app/actions/claims.ts    claim, mark bought, give
+app/actions/comments.ts  post a note on any visible item
 app/actions/parse.ts     URL → draft
 lib/db.ts                Mongo client (cached across hot reloads)
 lib/items.ts             queries, secret filter, priority order, seen watermark
 lib/list.ts              search, filter and sort the serialized list in memory
 components/ListControls.tsx  search box, filter and sort chips (URL-driven)
+components/CommentThread.tsx  expandable note thread on a card
 lib/view.ts              the serializer that hides claims
 lib/activity.ts          activity rows + push fan-out
+lib/comments.ts          note queries + insert
 lib/auth.ts              scrypt sessions, cached per-request user
 lib/theme.ts             the theme cookie the layout reads
 lib/parse.ts             JSON-LD/OG extraction
@@ -161,6 +171,7 @@ scripts/seed.ts, scripts/migrate.ts, scripts/set-password.ts
   metadata, broken JSON-LD, European/thousands prices, Amazon gallery/offscreen fallbacks, title
   wrapper stripping, link-in-paste-text, title from URL.
 - Serializer: an owner's payload has no claim fields; the secret flag is owner-only.
+- Comments: note validation (trim, length) and the shared secret visibility rule.
 - Priority order/labels/icons, schema coercion (priority enum, checkbox, blank numbers, quantity
   bounds, date format).
 - SSRF: `http://169.254.169.254/`, `http://localhost/`, public addresses, the 2MB read cap.
